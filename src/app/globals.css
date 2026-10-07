@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ── EatingHUB design tokens ─────────────────────────────
+   Brand: herb green (pure-veg identity) · Accent: saffron
+   Neutrals: cool, slightly green-tinted greys            */
+:root {
+  --bg: #f4f7f5;
+  --surface: #ffffff;
+  --surface-2: #edf2ef;
+  --line: #dfe7e2;
+  --fg: #0f1c16;
+  --muted: #56665e;
+  --subtle: #8fa098;
+  --brand-soft: #e3f6ec;
+  --accent-soft: #fdf3dc;
+  --shadow: 0 1px 2px rgb(15 28 22 / 0.05), 0 6px 20px -8px rgb(15 28 22 / 0.12);
+  /* Chart series — validated categorical slots 1–3 (light) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --grid: #e6ebe8;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0a100d;
+  --surface: #111a16;
+  --surface-2: #18231e;
+  --line: #24332c;
+  --fg: #e9f2ed;
+  --muted: #9cb0a6;
+  --subtle: #62746b;
+  --brand-soft: rgb(16 185 129 / 0.13);
+  --accent-soft: rgb(245 158 11 / 0.13);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 28px -10px rgb(0 0 0 / 0.6);
+  /* Chart series — validated categorical slots 1–3 (dark) */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --grid: #1f2b25;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent-soft: var(--accent-soft);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-grid: var(--grid);
+  --shadow-card: var(--shadow);
+}
+
+@theme {
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+  --color-accent-700: #b45309;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes float {
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  @keyframes shimmer {
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-bg text-fg antialiased;
+  }
+  ::selection {
+    @apply bg-brand-500/25;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+  [id] {
+    scroll-margin-top: 8rem;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+}
+
+/* ── Building blocks ───────────────────────────────────── */
+@utility card {
+  @apply rounded-2xl border border-line bg-surface shadow-card;
+}
+
+@utility btn {
+  @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition select-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply bg-brand-700 text-white shadow-sm shadow-brand-900/20 hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700;
+}
+@utility btn-ghost {
+  @apply border border-line bg-surface text-fg hover:bg-surface-2;
+}
+@utility btn-danger {
+  @apply border border-rose-500/30 bg-rose-500/10 text-rose-700 hover:bg-rose-500/15 dark:text-rose-400;
+}
+
+@utility field {
+  @apply h-10 w-full rounded-xl border border-line bg-surface px-3 text-sm text-fg outline-none transition placeholder:text-subtle focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20;
+}
+
+@utility skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  @apply animate-shimmer rounded-lg;
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Skip layout/paint for off-screen cards — big win on the 245-dish grid. */
+@utility cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+/* Fade the trailing edge of a horizontal scroller so more content is hinted. */
+@utility fade-x {
+  mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 4mm;
+  }
+  body {
+    background: #fff !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #invoice,
+  #invoice * {
+    visibility: visible;
+  }
+  #invoice {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    box-shadow: none !important;
+  }
+}

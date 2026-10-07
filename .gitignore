@@ -1,0 +1,14 @@
+# dependencies & build output
+node_modules
+dist
+.next
+next-env.d.ts
+*.tsbuildinfo
+
+# env & local tooling
+.env*
+.claude/
+.DS_Store
+
+# original Vite stub kept locally for reference
+_legacy-vite/
