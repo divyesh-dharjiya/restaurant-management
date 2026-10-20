@@ -10,9 +10,12 @@ import { selectActiveCount, selectOpenTicketCount } from "@/store/selectors";
 import { ThemeToggle } from "@/components/ui";
 import { Logo } from "./Logo";
 import { NavPending } from "./NavPending";
+import { LockKeyhole } from "lucide-react";
+import { useStaffLock } from "@/features/auth/StaffGate";
 
 export function Navbar() {
   const path = usePathname();
+  const lock = useStaffLock();
   const active = useAppSelector(selectActiveCount);
   const openTickets = useAppSelector(selectOpenTicketCount);
   const badge: Record<string, number> = { [routes.floor]: active, [routes.kitchen]: openTickets };
@@ -40,6 +43,9 @@ export function Navbar() {
           })}
         </nav>
         <ThemeToggle />
+        <button onClick={lock} className="grid size-9 shrink-0 place-items-center rounded-xl border border-line bg-surface text-muted transition hover:text-fg sm:size-10" aria-label="Lock POS" title="Lock POS">
+          <LockKeyhole className="size-4" />
+        </button>
       </div>
     </header>
   );
