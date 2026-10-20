@@ -7,6 +7,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm run build      # production build
 npm run typecheck
+npm test           # unit tests (Vitest): GST billing, dashboard periods, reservations, store, backups
 ```
 
 Set `NEXT_PUBLIC_SITE_URL` to your domain in production. The sitemap, canonical URLs and structured data use it.
@@ -27,6 +28,8 @@ Set `NEXT_PUBLIC_SITE_URL` to your domain in production. The sitemap, canonical 
 ```
 src/
   app/            Routes only: thin pages, metadata, sitemap, robots, OG image
+    (staff)/      Staff app: Redux store, staff navbar, storage banner
+    (public)/     Customer pages (/menu): no store, no staff links, minimal JS
   config/         Site name, URL, nav links, private paths
   features/       One folder per feature; owns its components
     floor/        Floor view, table card + animated illustration, booking/seat/table forms
@@ -47,9 +50,27 @@ src/
 Conventions:
 
 - **Routes stay thin.** A route file sets metadata and renders one feature view.
+- **Public and staff are separate.** The public menu never loads the store or animation library, and images there use `getImageProps` (plain `<img>`, no hydration).
+- **Navigation never feels frozen.** Table routes are pre-rendered and prefetched when a table is tapped, `loading.tsx` shows a skeleton instantly, and nav links show a pending spinner.
 - **Logic stays out of components.** Billing, analytics and formatting live in `lib/` as pure functions.
 - **State goes through `store/`.** Components use `useAppSelector` and selectors from `store/selectors.ts`. `useAppSelector` reads the server snapshot during hydration, so data saved in localStorage never causes a hydration mismatch.
 - **Styling uses design tokens.** Colours are tokens in `app/globals.css` (light and dark), and components use semantic classes (`bg-surface`, `text-muted`, `btn-primary`, …).
+
+## Reservations
+
+A table can hold several bookings (lunch and dinner). It shows **Reserved** only from 2 hours before a booking until 30 minutes after; after that the booking is flagged **Late** so staff can mark a no-show. Walk-ins can always be seated, and seating them never removes a booking: use **Arrived** on the booking when that party comes in. Bookings on the same table must be at least 90 minutes apart.
+
+## Data safety
+
+Everything is stored in this browser's localStorage, which holds roughly 5 MB (about 6,000 bills). The Bills page has a **Data & backup** panel:
+
+- **Export CSV**: the bills in the selected date range, with GST columns, for Excel or an accountant
+- **Backup** / **Restore**: the whole app state as one JSON file
+- **Archive old**: downloads, then removes, bills older than 2 years
+
+A banner appears on every page if storage passes 80% or a save fails.
+
+> Keep the project folder **outside OneDrive/Dropbox** (or exclude `node_modules` and `.next` from sync). Background syncing can corrupt files while `npm install` or the dev server is writing them.
 
 ## Sample data
 

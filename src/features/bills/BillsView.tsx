@@ -1,26 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, IndianRupee, Landmark, Printer, ReceiptText, Search, Trash2, Wallet } from "lucide-react";
+import { useQueryParam } from "@/hooks/useQueryParam";
+import { CheckCircle2, IndianRupee, Landmark, Printer, ReceiptText, Search, Wallet } from "lucide-react";
 import { summarize } from "@/lib/analytics";
 import { count, moneyWhole } from "@/lib/format";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAppSelector } from "@/store/hooks";
 import { selectBills } from "@/store/selectors";
-import { removeDemoBills } from "@/store/slices/posSlice";
 import { EmptyState, Modal, PageHeader, Segmented, StatCard } from "@/components/ui";
 import { BILL_RANGES, billsInRange, type BillRange } from "./billRanges";
 import { BillsTable } from "./BillsTable";
 import { Invoice } from "./Invoice";
+import { DataTools } from "./DataTools";
 
 const PAGE = 25;
 
 export function BillsView() {
   const bills = useAppSelector(selectBills);
-  const dispatch = useAppDispatch();
-  const params = useSearchParams();
-  const router = useRouter();
-  const open = bills.find((b) => b.id === params.get("id"));
+  const [openId, setOpenId] = useQueryParam("id");
+  const open = bills.find((b) => b.id === openId);
   const [range, setRange] = useState<BillRange>("month");
   const [q, setQ] = useState("");
   const [limit, setLimit] = useState(PAGE);
@@ -30,10 +28,9 @@ export function BillsView() {
     return billsInRange(bills, range, new Date()).filter((b) => !s || b.number.toLowerCase().includes(s) || b.tableName.toLowerCase().includes(s));
   }, [bills, range, q]);
   const sum = summarize(list);
-  const hasDemo = bills.some((b) => b.demo);
 
-  const openBill = (id: string) => router.replace(`/bills?id=${id}`, { scroll: false });
-  const close = () => router.replace("/bills", { scroll: false });
+  const openBill = (id: string) => setOpenId(id);
+  const close = () => setOpenId(null);
 
   return (
     <div className="space-y-6">
@@ -46,22 +43,21 @@ export function BillsView() {
               <Search className="size-4 text-subtle" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Bill no. or table" aria-label="Search bills" className="w-40 bg-transparent text-sm outline-none placeholder:text-subtle" />
             </div>
-            {hasDemo && (
-              <button className="btn btn-ghost" onClick={() => confirm("Remove all sample bills? Your real bills are kept.") && dispatch(removeDemoBills())}>
-                <Trash2 className="size-4" /> Remove sample bills
-              </button>
-            )}
           </>
         }
       />
 
-      <Segmented value={range} onChange={(r) => { setRange(r); setLimit(PAGE); }} options={BILL_RANGES} layoutId="bill-range" label="Date range" />
+      <Segmented value={range} onChange={(r) => { setRange(r); setLimit(PAGE); }} options={BILL_RANGES} layoutId="bill-range" label="Date range" wrap />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard label="Bills" value={count(sum.count)} icon={ReceiptText} iconClass="text-sky-600 dark:text-sky-400" />
         <StatCard label="Net sales" value={moneyWhole(sum.net)} icon={Wallet} iconClass="text-brand-700 dark:text-brand-400" />
         <StatCard label="GST collected" value={moneyWhole(sum.gst)} icon={Landmark} iconClass="text-violet-600 dark:text-violet-400" />
         <StatCard label="Gross total" value={moneyWhole(sum.revenue)} icon={IndianRupee} iconClass="text-accent-600 dark:text-accent-400" />
+      </div>
+
+      <div id="data" className="scroll-mt-24">
+        <DataTools filtered={list} rangeLabel={BILL_RANGES.find((r) => r.id === range)?.label ?? "all"} />
       </div>
 
       {list.length === 0 ? (

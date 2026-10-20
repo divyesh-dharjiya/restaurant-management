@@ -4,9 +4,9 @@ import { categories, itemById } from "./catalog";
 export type Period = "month" | "quarter" | "year" | "lastYear";
 
 export const PERIODS: { id: Period; label: string }[] = [
-  { id: "month", label: "This month" },
-  { id: "quarter", label: "This quarter" },
-  { id: "year", label: "This year" },
+  { id: "month", label: "Month" },
+  { id: "quarter", label: "Quarter" },
+  { id: "year", label: "Year" },
   { id: "lastYear", label: "Last year" },
 ];
 
@@ -19,9 +19,10 @@ export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const monthName = (d: Date) => d.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 
 /**
- * The selected period and the one it is compared against. Month and quarter
- * compare with the whole previous period; "this year" compares with last year
- * up to the same date, so year-to-date growth is like-for-like.
+ * The selected period and the one it is compared against. Periods still in
+ * progress are compared like-for-like: the previous period is cut to the same
+ * number of elapsed days (otherwise 19 days of October always "lose" to all of
+ * September). "Last year" is a full year compared with the full year before.
  */
 export function periodRanges(period: Period, now: Date): { current: Range; previous: Range } {
   const y = now.getFullYear();
@@ -34,7 +35,8 @@ export function periodRanges(period: Period, now: Date): { current: Range; previ
     case "month": {
       const cs = new Date(y, m, 1);
       const ps = new Date(y, m - 1, 1);
-      return { current: span(cs, now, monthName(cs)), previous: span(ps, cs, monthName(ps)) };
+      const end = Math.min(toDate(ps, cs), cs.getTime());
+      return { current: span(cs, now, monthName(cs)), previous: { start: ps.getTime(), end, label: `${monthName(ps)} (same days)` } };
     }
     case "quarter": {
       const q = Math.floor(m / 3);
@@ -42,7 +44,7 @@ export function periodRanges(period: Period, now: Date): { current: Range; previ
       const ps = new Date(y, q * 3 - 3, 1);
       return {
         current: span(cs, now, `Q${q + 1} ${y}`),
-        previous: span(ps, cs, `Q${((q + 3) % 4) + 1} ${ps.getFullYear()}`),
+        previous: { start: ps.getTime(), end: Math.min(toDate(ps, cs), cs.getTime()), label: `Q${((q + 3) % 4) + 1} ${ps.getFullYear()} (same days)` },
       };
     }
     case "year": {

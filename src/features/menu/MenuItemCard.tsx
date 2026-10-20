@@ -1,14 +1,18 @@
-import Image from "next/image";
+import { getImageProps } from "next/image";
 import { Flame, Leaf, Sparkles } from "lucide-react";
 import type { MenuItem } from "@/lib/catalog";
 import { money } from "@/lib/format";
 
 /** Server-rendered dish row for the public menu (no client JS). */
 export function MenuItemCard({ item, priority }: { item: MenuItem; priority?: boolean }) {
+  // getImageProps gives the optimised srcset of <Image> as a plain <img>,
+  // so 245 photos add zero hydration work on this page.
+  const { props: img } = getImageProps({ src: item.image, alt: item.name, width: 96, height: 96, sizes: "96px", quality: 70, priority });
   return (
     <li className="card cv-auto group flex gap-4 p-3 transition hover:-translate-y-0.5 hover:shadow-lg" style={{ containIntrinsicSize: "auto 120px" }}>
       <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-surface-2">
-        <Image src={item.image} alt={item.name} fill sizes="96px" quality={70} priority={priority} className="object-cover transition duration-500 group-hover:scale-105" />
+        {/* eslint-disable-next-line @next/next/no-img-element -- optimised via getImageProps */}
+        <img {...img} alt={item.name} className="size-full object-cover transition duration-500 group-hover:scale-105" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-start justify-between gap-2">

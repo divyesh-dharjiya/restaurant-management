@@ -28,12 +28,12 @@ export function CategoryChips({ tabs, value, onChange }: { tabs: CategoryTab[]; 
             onClick={() => onChange(c.id)}
             className={cn(
               "flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap transition",
-              on ? "border-brand-700 bg-brand-700 text-white shadow-sm shadow-brand-900/20 dark:border-brand-600 dark:bg-brand-600" : "border-line bg-surface text-muted hover:border-brand-500/50 hover:text-fg",
+              on ? "border-brand-700 bg-brand-700 text-white shadow-sm shadow-brand-900/20" : "border-line bg-surface text-muted hover:border-brand-500/50 hover:text-fg",
             )}
           >
             <span aria-hidden>{c.emoji}</span>
             {c.name}
-            <span className={cn("text-xs font-medium tabular-nums", on ? "text-white/75" : "text-subtle")}>{c.count}</span>
+            <span className={cn("text-xs font-medium tabular-nums", on ? "text-white/90" : "text-subtle")}>{c.count}</span>
           </button>
         );
       })}

@@ -15,13 +15,19 @@ export type Session = {
 };
 
 export type Booking = {
+  id: string;
+  tableId: string;
   name: string;
   phone: string;
   guests: number;
   /** Local date-time string from <input type="datetime-local">. */
   at: string;
   note?: string;
+  createdAt: number;
 };
+
+/** Where a reservation stands relative to now. */
+export type BookingState = "upcoming" | "due" | "late";
 
 export type Bill = {
   id: string;
@@ -42,7 +48,8 @@ export type TableStatus = "free" | "reserved" | "seated" | "ordering" | "billing
 export type PosState = {
   tables: Table[];
   sessions: Record<string, Session>;
-  bookings: Record<string, Booking>;
+  /** All reservations; a table can have several (lunch + dinner). */
+  bookings: Booking[];
   bills: Bill[];
   billSeq: number;
   /** Bumped when sample data is added so it is only seeded once per browser. */

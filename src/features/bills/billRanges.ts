@@ -5,9 +5,9 @@ export type BillRange = "today" | Period | "all";
 
 export const BILL_RANGES: { id: BillRange; label: string }[] = [
   { id: "today", label: "Today" },
-  { id: "month", label: "This month" },
+  { id: "month", label: "Month" },
   { id: "quarter", label: "Quarter" },
-  { id: "year", label: "This year" },
+  { id: "year", label: "Year" },
   { id: "lastYear", label: "Last year" },
   { id: "all", label: "All" },
 ];

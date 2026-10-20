@@ -33,7 +33,7 @@ export function BarChart({ categories, series, format, axisFormat = format, heig
   const labelEvery = band < 30 ? 2 : 1;
 
   return (
-    <div ref={ref} className="relative w-full" onMouseLeave={() => setHover(null)}>
+    <div ref={ref} className="relative w-full min-w-0" onMouseLeave={() => setHover(null)}>
       <svg width={width} height={height} className="block overflow-visible" role="img" aria-label={`Bar chart: ${series.map((s) => s.name).join(" vs ")}`}>
         {/* Recessive grid + y axis labels */}
         {ticks.map((t) => (
@@ -76,6 +76,7 @@ export function BarChart({ categories, series, format, axisFormat = format, heig
                 height={plotH}
                 fill="transparent"
                 tabIndex={0}
+                role="img"
                 aria-label={`${c}: ${series.map((s) => `${s.name} ${format(s.values[i] ?? 0)}`).join(", ")}`}
                 onMouseEnter={() => setHover(i)}
                 onFocus={() => setHover(i)}

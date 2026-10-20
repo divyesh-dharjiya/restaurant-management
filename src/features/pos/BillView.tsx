@@ -47,7 +47,7 @@ export function BillView({ id }: { id: string }) {
         <Invoice number="DRAFT" tableName={table.name} guests={session.guests} createdAt={now} totals={totals} />
       </motion.div>
 
-      <motion.aside initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="card space-y-5 p-5 lg:sticky lg:top-20 print:hidden">
+      <motion.aside initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="card order-first space-y-5 p-5 lg:sticky lg:top-20 lg:order-none print:hidden">
         <button
           onClick={() => {
             dispatch(reopenTable(id));

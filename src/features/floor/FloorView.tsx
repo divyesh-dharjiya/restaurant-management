@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, SearchX } from "lucide-react";
 import type { TableStatus } from "@/types/pos";
 import { useNow } from "@/hooks/useNow";
 import { useAppSelector, useIsClient } from "@/store/hooks";
 import { selectPos, tableStatus } from "@/store/selectors";
+import { bookingsFor } from "@/lib/reservations";
 import { EmptyState, PageHeader, Segmented } from "@/components/ui";
 import { FloorStats } from "./FloorStats";
 import { ReservationStrip } from "./ReservationStrip";
@@ -21,6 +22,9 @@ const STATUS_FILTERS: { id: StatusFilter; label: string; match: (s: TableStatus)
   { id: "busy", label: "Occupied", match: (s) => s === "seated" || s === "ordering" || s === "billing" },
 ];
 
+/** Cards animate in on the first visit only; returning to the floor should feel instant. */
+let floorSeen = false;
+
 export function FloorView() {
   const { tables, sessions, bookings } = useAppSelector(selectPos);
   const isClient = useIsClient();
@@ -29,11 +33,16 @@ export function FloorView() {
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
   const [form, setForm] = useState<{ open: boolean; editId?: string | null }>({ open: false });
+  // Server HTML must render cards visible; animate only when arriving by client-side navigation.
+  const [animateIn] = useState(() => !floorSeen && isClient);
+  useEffect(() => {
+    floorSeen = true;
+  }, []);
 
   const zones = useMemo(() => ["All", ...new Set(tables.map((t) => t.zone))].map((z) => ({ id: z, label: z })), [tables]);
   const match = STATUS_FILTERS.find((f) => f.id === filter)!.match;
   const visible = tables
-    .map((t) => ({ table: t, status: tableStatus({ sessions, bookings }, t.id) }))
+    .map((t) => ({ table: t, status: tableStatus({ sessions, bookings }, t.id, now) }))
     .filter(({ table, status }) => (zone === "All" || table.zone === zone) && match(status));
 
   return (
@@ -49,19 +58,19 @@ export function FloorView() {
       />
 
       <FloorStats />
-      <ReservationStrip onOpen={setOpenId} />
+      <ReservationStrip now={now} onOpen={setOpenId} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Segmented value={zone} onChange={setZone} options={zones} layoutId="zone-tab" label="Zone" />
-        <Segmented value={filter} onChange={setFilter} options={STATUS_FILTERS} layoutId="status-tab" label="Status" />
+        <Segmented value={zone} onChange={setZone} options={zones} layoutId="zone-tab" label="Zone" wrap />
+        <Segmented value={filter} onChange={setFilter} options={STATUS_FILTERS} layoutId="status-tab" label="Status" wrap />
       </div>
 
       {visible.length === 0 ? (
         <EmptyState icon={SearchX} title="No tables match these filters" />
       ) : (
-        <section className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" aria-label="Tables">
+        <section className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" aria-label="Tables">
           {visible.map(({ table, status }, i) => (
-            <TableCard key={table.id} index={i} table={table} status={status} session={sessions[table.id]} booking={bookings[table.id]} now={now} onOpen={() => setOpenId(table.id)} />
+            <TableCard key={table.id} index={i} animateIn={animateIn} table={table} status={status} session={sessions[table.id]} booking={bookingsFor(bookings, table.id)[0]} now={now} onOpen={() => setOpenId(table.id)} />
           ))}
         </section>
       )}

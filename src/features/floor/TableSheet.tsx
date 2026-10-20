@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useNow } from "@/hooks/useNow";
 import { useAppSelector } from "@/store/hooks";
 import { selectPos, tableStatus } from "@/store/selectors";
 import { Modal, StatusPill } from "@/components/ui";
@@ -15,6 +17,12 @@ export function TableSheet({ tableId, onClose, onEdit }: { tableId: string | nul
   const { tables, sessions, bookings } = useAppSelector(selectPos);
   const table = tables.find((t) => t.id === tableId);
   const [mode, setMode] = useState<Mode>("view");
+  const now = useNow();
+  const router = useRouter();
+  // Warm up the order screen while staff decide, so "Take order" opens instantly.
+  useEffect(() => {
+    if (tableId) router.prefetch(`/table/${tableId}`);
+  }, [tableId, router]);
   const close = () => {
     setMode("view");
     onClose();
@@ -28,7 +36,7 @@ export function TableSheet({ tableId, onClose, onEdit }: { tableId: string | nul
         table && (
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-bold">{table.name}</h2>
-            <StatusPill status={tableStatus({ sessions, bookings }, table.id)} />
+            <StatusPill status={tableStatus({ sessions, bookings }, table.id, now)} />
             <span className="w-full text-xs text-muted">{table.zone} · {table.seats} seats</span>
           </div>
         )

@@ -25,7 +25,8 @@ export function DishCard({ item, qty, priority, onAdd, onDec }: Props) {
       <div className="flex flex-1 flex-col p-3">
         <h3 className="line-clamp-1 text-sm font-bold">{item.name}</h3>
         <p className="mt-0.5 line-clamp-2 flex-1 text-xs leading-relaxed text-muted">{item.description}</p>
-        <div className="mt-3 flex items-center justify-between gap-2">
+        {/* Wraps the stepper under the price when the card is narrow (2-up on phones). */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <span className="font-extrabold tabular-nums">{money(item.price)}</span>
           {qty > 0 ? (
             <Stepper size="sm" qty={qty} onInc={onAdd} onDec={onDec} label={item.name} />

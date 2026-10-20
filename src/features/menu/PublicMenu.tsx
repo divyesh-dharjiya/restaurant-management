@@ -1,6 +1,7 @@
 import { site } from "@/config/site";
 import { items } from "@/lib/catalog";
-import { BackToTop, PureVeg } from "@/components/ui";
+import { BackToTop } from "@/components/ui/BackToTop";
+import { PureVeg } from "@/components/ui/PureVeg";
 import { MenuItemCard } from "./MenuItemCard";
 import { jsonLdScript, menuByCategory, menuJsonLd } from "./structuredData";
 
@@ -50,9 +51,6 @@ export function PublicMenu() {
         ))}
       </div>
 
-      <footer className="mt-16 border-t border-line pt-6 text-center text-xs text-subtle">
-        © {site.name} · Dish photos via Wikimedia Commons contributors
-      </footer>
       <BackToTop />
     </>
   );

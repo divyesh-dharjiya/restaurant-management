@@ -4,17 +4,19 @@ import { seedTables } from "@/lib/catalog";
 import { ymd } from "@/lib/format";
 import type { Booking, PaymentMode, PosState, Table } from "@/types/pos";
 
-export const initialState: PosState = { tables: seedTables, sessions: {}, bookings: {}, bills: [], billSeq: 0, seedVersion: 0 };
+export const initialState: PosState = { tables: seedTables, sessions: {}, bookings: [], bills: [], billSeq: 0, seedVersion: 0 };
 
-/** Seat guests at a table, converting an existing booking if there is one. */
+/**
+ * Seat guests at a table. Never touches reservations: a walk-in can use a table
+ * before tonight's booking, and the booking stays. Use `seatBooking` when a
+ * booked party arrives.
+ */
 function seat(state: PosState, tableId: string, guests?: number, guestName?: string) {
   if (state.sessions[tableId]) return state.sessions[tableId];
-  const booking = state.bookings[tableId];
-  delete state.bookings[tableId];
   return (state.sessions[tableId] = {
     cart: [],
-    guests: guests ?? booking?.guests ?? 2,
-    guestName: guestName ?? booking?.name,
+    guests: guests ?? 2,
+    guestName,
     discountPct: 0,
     openedAt: Date.now(),
     billRequested: false,
@@ -81,15 +83,28 @@ const posSlice = createSlice({
     },
     moveTable(state, { payload }: PayloadAction<{ from: string; to: string }>) {
       const s = state.sessions[payload.from];
-      if (!s || state.sessions[payload.to] || state.bookings[payload.to]) return;
+      if (!s || state.sessions[payload.to]) return;
       state.sessions[payload.to] = s;
       delete state.sessions[payload.from];
     },
-    bookTable(state, { payload }: PayloadAction<{ tableId: string; booking: Booking }>) {
-      state.bookings[payload.tableId] = payload.booking;
+    bookTable: {
+      reducer(state, { payload }: PayloadAction<Booking>) {
+        state.bookings.push(payload);
+      },
+      prepare(booking: Omit<Booking, "id" | "createdAt">) {
+        return { payload: { ...booking, id: nanoid(), createdAt: Date.now() } };
+      },
     },
+    /** The booked party has arrived: seat them and close that one booking. */
+    seatBooking(state, { payload }: PayloadAction<string>) {
+      const b = state.bookings.find((x) => x.id === payload);
+      if (!b || state.sessions[b.tableId]) return;
+      seat(state, b.tableId, b.guests, b.name);
+      state.bookings = state.bookings.filter((x) => x.id !== payload);
+    },
+    /** Cancel or mark as no-show. */
     cancelBooking(state, { payload }: PayloadAction<string>) {
-      delete state.bookings[payload];
+      state.bookings = state.bookings.filter((b) => b.id !== payload);
     },
 
     // ── Floor management ──────────────────────────────────
@@ -108,7 +123,7 @@ const posSlice = createSlice({
     removeTable(state, { payload }: PayloadAction<string>) {
       if (state.sessions[payload]) return; // never drop a table with guests on it
       state.tables = state.tables.filter((t) => t.id !== payload);
-      delete state.bookings[payload];
+      state.bookings = state.bookings.filter((b) => b.tableId !== payload);
     },
 
     // ── Billing ───────────────────────────────────────────
@@ -137,12 +152,16 @@ const posSlice = createSlice({
     removeDemoBills(state) {
       state.bills = state.bills.filter((b) => !b.demo);
     },
+    /** Drop bills created before `before` (after they have been downloaded). */
+    archiveBills(state, { payload }: PayloadAction<{ before: number }>) {
+      state.bills = state.bills.filter((b) => b.createdAt >= payload.before);
+    },
   },
 });
 
 export const {
   replace, addItem, decItem, removeItem, clearCart, setNote, setGuests, setDiscount, requestBill, reopenTable,
-  seatTable, freeTable, moveTable, bookTable, cancelBooking, addTable, updateTable, removeTable, settleBill, removeDemoBills,
+  seatTable, seatBooking, freeTable, moveTable, bookTable, cancelBooking, addTable, updateTable, removeTable, settleBill, removeDemoBills, archiveBills,
 } = posSlice.actions;
 
 export default posSlice.reducer;

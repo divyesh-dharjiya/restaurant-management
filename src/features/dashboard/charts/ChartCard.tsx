@@ -19,7 +19,7 @@ export function Legend({ items }: { items: { name: string; color: string }[] }) 
 /** Frame for every chart: title, optional legend/actions, and an accessible table view. */
 export function ChartCard({ title, subtitle, legend, table, className, children }: { title: string; subtitle?: string; legend?: React.ReactNode; table?: DataTable; className?: string; children: React.ReactNode }) {
   return (
-    <section className={cn("card flex flex-col p-4 sm:p-5", className)} aria-label={title}>
+    <section className={cn("card flex min-w-0 flex-col p-4 sm:p-5", className)} aria-label={title}>
       <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="font-bold">{title}</h2>
@@ -27,7 +27,7 @@ export function ChartCard({ title, subtitle, legend, table, className, children 
         </div>
         {legend}
       </header>
-      <div className="flex-1">{children}</div>
+      <div className="min-w-0 flex-1">{children}</div>
       {table && (
         <details className="group mt-3 text-xs">
           <summary className="cursor-pointer select-none text-muted hover:text-fg">View as table</summary>

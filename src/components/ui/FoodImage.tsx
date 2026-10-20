@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 
 const DEFAULT_SIZES = "(min-width:1536px) 18vw, (min-width:1024px) 24vw, (min-width:640px) 33vw, 50vw";
 
-/** Dish photo with a shimmer while loading and a graceful fallback if missing. */
+/** Dish photo with a shimmer behind it while loading and a graceful fallback if missing. Visible as soon as the browser paints it — never gated on JS. */
 export function FoodImage({ src, alt, className, sizes = DEFAULT_SIZES, priority }: { src: string; alt: string; className?: string; sizes?: string; priority?: boolean }) {
   const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
   // Cached images can finish loading before hydration attaches onLoad, so check on mount too.
@@ -28,7 +28,7 @@ export function FoodImage({ src, alt, className, sizes = DEFAULT_SIZES, priority
           quality={70}
           onLoad={() => setState("ready")}
           onError={() => setState("failed")}
-          className={cn("object-cover transition-opacity duration-500", state === "ready" ? "opacity-100" : "opacity-0")}
+          className="object-cover"
         />
       )}
     </div>

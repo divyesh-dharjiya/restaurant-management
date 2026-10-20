@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { site } from "@/config/site";
-import StoreProvider from "@/store/StoreProvider";
-import { Navbar } from "@/components/layout/Navbar";
-import { themeInitScript } from "@/components/ui";
+import { themeInitScript } from "@/components/ui/ThemeToggle";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta", display: "swap" });
@@ -33,7 +31,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${jakarta.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang="en-IN" className={`${jakarta.variable} ${geistMono.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
@@ -41,10 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:shadow-card">
           Skip to content
         </a>
-        <StoreProvider>
-          <Navbar />
-          <main id="main" className="mx-auto w-full max-w-[1600px] px-4 pb-24 pt-5 sm:px-6">{children}</main>
-        </StoreProvider>
+        {children}
       </body>
     </html>
   );

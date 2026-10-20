@@ -31,6 +31,7 @@ export function MenuSearch({ query, onQuery, diet, onToggleDiet }: Props) {
           key={f.id}
           onClick={() => onToggleDiet(f.id)}
           aria-pressed={diet.has(f.id)}
+          aria-label={`${f.label} dishes only`}
           className={cn(
             "flex h-11 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-sm font-semibold transition",
             diet.has(f.id) ? "border-brand-600/50 bg-brand-soft text-brand-800 dark:text-brand-300" : "border-line bg-surface text-muted hover:text-fg",

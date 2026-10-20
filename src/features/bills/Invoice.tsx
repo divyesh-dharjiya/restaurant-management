@@ -62,7 +62,7 @@ export function Invoice({ number, tableName, guests, createdAt, totals: t, payme
       </div>
       <Dash />
       <div className="text-center text-[11px] text-zinc-500">
-        Prices inclusive of all charges · GST {tax.cgst + tax.sgst}%<br />
+        Grand total includes GST @ {tax.cgst + tax.sgst}% (CGST {tax.cgst}% + SGST {tax.sgst}%)<br />
         Thank you! Visit again 🙏
       </div>
     </div>

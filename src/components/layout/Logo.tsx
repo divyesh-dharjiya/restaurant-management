@@ -21,11 +21,12 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ showTagline = true }: { showTagline?: boolean }) {
+export function Logo({ href = "/", showTagline = true }: { href?: string; showTagline?: boolean }) {
   return (
-    <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label={`${site.name} — home`}>
-      <LogoMark className="transition group-hover:rotate-[-6deg] group-hover:scale-105" />
-      <span className="leading-tight">
+    <Link href={href} className="group flex shrink-0 items-center gap-2 sm:gap-2.5" aria-label={`${site.name} — home`}>
+      <LogoMark className="size-8 transition group-hover:rotate-[-6deg] group-hover:scale-105 sm:size-9" />
+      {/* Wordmark hides on very narrow phones (<370px) so the nav fits. */}
+      <span className="hidden leading-tight min-[370px]:block">
         <span className="block text-lg font-extrabold tracking-tight">
           Eating<span className="text-brand-600 dark:text-brand-400">HUB</span>
         </span>

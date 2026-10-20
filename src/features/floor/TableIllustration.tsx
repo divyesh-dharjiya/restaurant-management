@@ -36,7 +36,7 @@ export function shortName(name: string) {
   return /^table$/i.test(first) ? rest.join("") : first[0].toUpperCase() + rest.join("");
 }
 
-export function TableIllustration({ name, seats, filled, status, className }: { name: string; seats: number; filled: number; status: TableStatus; className?: string }) {
+export function TableIllustration({ name, seats, filled, status, className, animateIn = true }: { name: string; seats: number; filled: number; status: TableStatus; className?: string; animateIn?: boolean }) {
   const { shape, tableW, chairs } = layout(seats);
   const busy = status === "ordering" || status === "billing";
   const active = status !== "free";
@@ -62,7 +62,7 @@ export function TableIllustration({ name, seats, filled, status, className }: { 
         return (
           <motion.g
             key={i}
-            initial={{ scale: 0, opacity: 0 }}
+            initial={animateIn ? { scale: 0, opacity: 0 } : false}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.05 + i * 0.04, type: "spring", bounce: 0.45, duration: 0.5 }}
           >

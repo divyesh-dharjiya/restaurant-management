@@ -16,7 +16,7 @@ export function ThemeToggle() {
     } catch {}
   };
   return (
-    <button onClick={toggle} className="grid size-10 place-items-center rounded-xl border border-line bg-surface text-muted transition hover:text-fg" aria-label="Toggle colour theme">
+    <button onClick={toggle} className="grid size-9 shrink-0 place-items-center rounded-xl sm:size-10 border border-line bg-surface text-muted transition hover:text-fg" aria-label="Toggle colour theme">
       <Sun className="size-4 dark:hidden" />
       <Moon className="hidden size-4 dark:block" />
     </button>

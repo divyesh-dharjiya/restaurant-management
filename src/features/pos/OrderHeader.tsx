@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectPos, tableStatus } from "@/store/selectors";
 import { moveTable, setGuests } from "@/store/slices/posSlice";
 import { StatusPill, Stepper } from "@/components/ui";
+import { useNow } from "@/hooks/useNow";
 
 export function OrderHeader({ table }: { table: Table }) {
   const router = useRouter();
@@ -15,8 +16,9 @@ export function OrderHeader({ table }: { table: Table }) {
   const { tables, sessions, bookings } = useAppSelector(selectPos);
   const id = table.id;
   const session = sessions[id];
-  const guests = session?.guests ?? bookings[id]?.guests ?? 2;
-  const freeTables = tables.filter((t) => t.id !== id && !sessions[t.id] && !bookings[t.id]);
+  const now = useNow();
+  const guests = session?.guests ?? 2;
+  const freeTables = tables.filter((t) => t.id !== id && !sessions[t.id]);
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -26,7 +28,7 @@ export function OrderHeader({ table }: { table: Table }) {
       <div className="mr-auto">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-extrabold tracking-tight">{table.name}</h1>
-          <StatusPill status={tableStatus({ sessions, bookings }, id)} />
+          <StatusPill status={tableStatus({ sessions, bookings }, id, now)} />
         </div>
         <p className="text-xs text-muted">{table.zone} · {table.seats} seats{session?.guestName && ` · ${session.guestName}`}</p>
       </div>

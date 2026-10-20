@@ -43,7 +43,7 @@ export function DashboardView() {
       <PageHeader
         title="Dashboard"
         subtitle="Sales, GST and best-sellers at a glance"
-        actions={<Segmented value={period} onChange={setPeriod} options={PERIODS} layoutId="period-tab" label="Period" />}
+        actions={<Segmented value={period} onChange={setPeriod} options={PERIODS} layoutId="period-tab" label="Period" wrap />}
       />
       {/* Every figure depends on the viewer's clock, so render after hydration. */}
       {isClient ? <DashboardBody period={period} /> : <DashboardSkeleton />}
@@ -53,30 +53,35 @@ export function DashboardView() {
 
 function DashboardBody({ period }: { period: Period }) {
   const bills = useAppSelector(selectBills);
-  const data = useMemo(() => {
+  // Year-level series don't change when the period tab changes.
+  const yearly = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
-    const { current, previous } = periodRanges(period, now);
-    const cur = inRange(bills, current);
-    const thisYearBills = inRange(bills, periodRanges("year", now).current);
-    const lastYearBills = inRange(bills, periodRanges("lastYear", now).current);
     return {
       year,
-      current,
-      previous,
-      cur,
-      summary: summarize(cur),
-      prevSummary: summarize(inRange(bills, previous)),
       monthly: [monthlyRevenue(bills, year), monthlyRevenue(bills, year - 1)],
       quarterly: [quarterlyRevenue(bills, year), quarterlyRevenue(bills, year - 1)],
-      thisYear: summarize(thisYearBills),
-      lastYear: summarize(lastYearBills),
+      thisYear: summarize(inRange(bills, periodRanges("year", now).current)),
+      lastYear: summarize(inRange(bills, periodRanges("lastYear", now).current)),
+    };
+  }, [bills]);
+
+  const selected = useMemo(() => {
+    const { current, previous } = periodRanges(period, new Date());
+    const cur = inRange(bills, current);
+    return {
+      current,
+      previous,
+      summary: summarize(cur),
+      prevSummary: summarize(inRange(bills, previous)),
       dishes: topDishes(cur, 8),
       categories: categoryRevenue(cur),
       payments: paymentSplit(cur),
       weekdays: weekdayRevenue(cur),
     };
   }, [bills, period]);
+
+  const data = { ...yearly, ...selected };
 
   if (!bills.length) return <EmptyState icon={BarChart3} title="No bills yet">Settle a bill and your sales will show up here.</EmptyState>;
 
