@@ -5,9 +5,10 @@ import { money } from "@/lib/format";
 
 /** Server-rendered dish row for the public menu (no client JS). */
 export function MenuItemCard({ item, priority }: { item: MenuItem; priority?: boolean }) {
-  // getImageProps gives the optimised srcset of <Image> as a plain <img>,
+  // getImageProps gives the optimised srcset of <Image> as a plain <img>. No `sizes`: a fixed
+  // 96px image gets a 1x/2x srcset (2 URLs) instead of all 15 responsive widths,
   // so 245 photos add zero hydration work on this page.
-  const { props: img } = getImageProps({ src: item.image, alt: item.name, width: 96, height: 96, sizes: "96px", quality: 70, priority });
+  const { props: img } = getImageProps({ src: item.image, alt: item.name, width: 96, height: 96, quality: 70, preload: priority, fetchPriority: priority ? "high" : undefined, loading: priority ? "eager" : "lazy" });
   return (
     <li className="card cv-auto group flex gap-4 p-3 transition hover:-translate-y-0.5 hover:shadow-lg" style={{ containIntrinsicSize: "auto 120px" }}>
       <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-surface-2">

@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   images: {
     formats: ["image/avif", "image/webp"],
+    // Next 16 only honours listed qualities; anything else silently becomes 75.
+    qualities: [70, 75],
     minimumCacheTTL: 60 * 60 * 24 * 365,
   },
   // The staff app moved under /pos when the public home page took "/". Keep old bookmarks working.

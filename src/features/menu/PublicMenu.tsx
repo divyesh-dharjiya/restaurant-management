@@ -12,8 +12,8 @@ export function PublicMenu() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript(menuJsonLd()) }} />
 
       <header className="relative overflow-hidden rounded-3xl border border-line bg-surface p-6 shadow-card sm:p-10">
-        <div className="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 left-1/3 size-56 rounded-full bg-accent-400/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 -top-24 size-96 glow-brand" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/3 size-80 glow-accent" />
         <PureVeg />
         <h1 className="relative mt-3 text-3xl font-extrabold tracking-tight sm:text-5xl">
           The <span className="text-brand-700 dark:text-brand-400">{site.name}</span> menu

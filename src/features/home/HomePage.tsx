@@ -24,10 +24,10 @@ export function HomePage() {
 }
 
 function Hero() {
-  const { props: img } = getImageProps({ src: HERO_IMAGE.src, alt: HERO_IMAGE.alt, width: 720, height: 540, sizes: "(min-width:1024px) 45vw, 100vw", quality: 75, priority: true });
+  const { props: img } = getImageProps({ src: HERO_IMAGE.src, alt: HERO_IMAGE.alt, width: 720, height: 540, sizes: "(min-width:1024px) 45vw, 100vw", quality: 70, preload: true, fetchPriority: "high", loading: "eager" });
   return (
     <section className="relative grid items-center gap-8 overflow-hidden rounded-3xl border border-line bg-surface p-6 shadow-card sm:p-10 lg:grid-cols-2" aria-labelledby="hero-h">
-      <div className="pointer-events-none absolute -left-20 -top-24 size-72 rounded-full bg-brand-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -left-20 -top-24 size-96 glow-brand" />
       <div className="relative">
         <PureVeg />
         <h1 id="hero-h" className="mt-4 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">

@@ -211,3 +211,12 @@
     box-shadow: none !important;
   }
 }
+
+/* Soft decorative glows. A radial gradient looks like a blurred circle but costs
+   nothing to paint, unlike filter: blur() on a large element. */
+@utility glow-brand {
+  background: radial-gradient(closest-side, rgb(16 185 129 / 0.2), transparent);
+}
+@utility glow-accent {
+  background: radial-gradient(closest-side, rgb(251 191 36 / 0.15), transparent);
+}
