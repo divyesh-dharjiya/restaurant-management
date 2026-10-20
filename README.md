@@ -1,6 +1,6 @@
 # EatingHUB
 
-Restaurant POS for a pure-veg kitchen: table-wise ordering, reservations, GST billing and a sales dashboard. All data lives in the browser (localStorage), so no backend is needed.
+A restaurant website and POS for a pure-veg kitchen. The public site (home and menu) is server-rendered for search engines. The staff POS, behind a PIN, handles table-wise ordering, kitchen tickets, reservations, GST billing and a sales dashboard. All data lives in the browser (localStorage), so no backend is needed.
 
 ```bash
 npm install
@@ -16,12 +16,17 @@ Set `NEXT_PUBLIC_SITE_URL` to your domain in production. The sitemap, canonical 
 
 | Route | What it is | Indexed |
 |---|---|---|
-| `/` | Floor: tables, reservations, seat / free / add / remove tables | no |
-| `/table/[id]` | Take an order for a table | no |
-| `/table/[id]/bill` | GST invoice, payment, settle | no |
-| `/bills` | Bill history with today / month / quarter / year / last-year filters | no |
-| `/dashboard` | Revenue, GST, monthly & quarterly charts, top dishes, payments | no |
+| `/` | Public home: highlights, favourite dishes, opening hours, FAQ (Restaurant + FAQPage schema) | yes |
 | `/menu` | Public, statically rendered menu with schema.org data | yes |
+| `/pos` | Floor: tables, reservations, seat / free / add / remove tables | no |
+| `/pos/table/[id]` | Take an order, add kitchen notes, send kitchen tickets (KOT) | no |
+| `/pos/table/[id]/bill` | GST invoice, split calculator, payment, settle | no |
+| `/pos/kitchen` | Kitchen display: new, cooking, ready; printable KOT slips | no |
+| `/pos/menu` | Mark dishes sold out; the till then blocks them | no |
+| `/pos/bills` | Bill history with date filters, void with reason, CSV, backup | no |
+| `/pos/dashboard` | Revenue, GST, monthly & quarterly charts, top dishes, payments | no |
+
+Old URLs (`/bills`, `/dashboard`, `/table/...`) redirect permanently to their `/pos` versions.
 
 ## Project structure
 
@@ -79,3 +84,22 @@ On first run, 60 sample bills are generated, spread from January last year to ye
 ## Menu & images
 
 Edit `scripts/build-menu.mjs` and run `node scripts/build-menu.mjs`. Then run `node scripts/fetch-images.mjs` to download photos for any new dishes (from Wikimedia Commons; credits are in `src/data/image-credits.json`).
+
+## Staff PIN lock
+
+The first visit to `/pos` asks for a 4–6 digit staff PIN. Only a salted SHA-256 hash is stored. An unlock lasts for that browser tab and ends after 15 minutes without activity, or when staff press the lock button. Five wrong PINs in a row pause entry for 30 seconds. "Forgot PIN" can only reset the PIN by erasing all POS data on the device, so the lock can't be skipped to read bills.
+
+> This is a demo-grade gate for a browser-only app. It keeps casual visitors out, but anyone with access to the device's storage can read the data. A real deployment needs server-side authentication.
+
+## Kitchen tickets (KOT)
+
+Each order remembers how much of each dish the kitchen has already been told about. **Send KOT** sends only what changed: new dishes and extra quantities, plus cancellations if something was reduced after sending. Tickets appear on `/pos/kitchen` and move from New to Cooking to Ready to Served; tickets older than 15 minutes are highlighted. Moving an order to another table moves its tickets, settling marks them served, and freeing a table without a bill removes them. Served tickets are kept for 12 hours.
+
+## Bills: split and void
+
+The bill screen splits the total equally in whole rupees (shares always add up to the total). A settled bill can be **voided** with a reason. It keeps its number and appears with a VOID stamp, but is left out of sales, GST and the dashboard, and the CSV export marks it.
+
+## Quality
+
+- `npm run typecheck` and `npm test` (1,339 unit tests: billing, GST, kitchen tickets, reservations, PIN logic, store, persistence, CSV).
+- Lighthouse (mobile, production build): SEO, accessibility and best practices 100 on `/` and `/menu`; performance 85–87 on `/` and 77–83 on `/menu` (245 dishes on one page).
