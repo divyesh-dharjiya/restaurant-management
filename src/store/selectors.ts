@@ -1,3 +1,4 @@
+import { createSelector } from "@reduxjs/toolkit";
 import type { PosState, TableStatus } from "@/types/pos";
 import { holdingBooking } from "@/lib/reservations";
 import type { RootState } from "./store";
@@ -20,3 +21,9 @@ export function tableStatus(s: Pick<PosState, "sessions" | "bookings">, id: stri
   if (session) return session.billRequested ? "billing" : session.cart.length ? "ordering" : "seated";
   return holdingBooking(s.bookings, id, now) ? "reserved" : "free";
 }
+export const selectTickets = (s: RootState) => s.pos.tickets;
+export const selectSoldOut = (s: RootState) => s.pos.soldOut;
+/** Kitchen tickets not yet served, for the navbar badge. */
+export const selectOpenTicketCount = (s: RootState) => s.pos.tickets.filter((t) => t.status !== "served").length;
+/** Bills that count towards sales: everything except voided bills. */
+export const selectSalesBills = createSelector([selectBills], (bills) => bills.filter((b) => !b.voided));

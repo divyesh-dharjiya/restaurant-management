@@ -20,7 +20,7 @@ import {
 } from "@/lib/analytics";
 import { moneyCompact, moneyWhole } from "@/lib/format";
 import { useAppSelector, useIsClient } from "@/store/hooks";
-import { selectBills } from "@/store/selectors";
+import { selectSalesBills } from "@/store/selectors";
 import { EmptyState, PageHeader, Segmented } from "@/components/ui";
 import { BarChart } from "./charts/BarChart";
 import { BarList } from "./charts/BarList";
@@ -52,7 +52,7 @@ export function DashboardView() {
 }
 
 function DashboardBody({ period }: { period: Period }) {
-  const bills = useAppSelector(selectBills);
+  const bills = useAppSelector(selectSalesBills);
   // Year-level series don't change when the period tab changes.
   const yearly = useMemo(() => {
     const now = new Date();

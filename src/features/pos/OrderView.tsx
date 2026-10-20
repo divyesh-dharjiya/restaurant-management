@@ -5,7 +5,7 @@ import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { UtensilsCrossed } from "lucide-react";
 import { computeBill } from "@/lib/billing";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { selectSession, selectTable } from "@/store/selectors";
+import { selectSession, selectSoldOut, selectTable } from "@/store/selectors";
 import { addItem, decItem } from "@/store/slices/posSlice";
 import { BackToTop, EmptyState } from "@/components/ui";
 import { CATEGORY_TABS, POPULAR, filterMenu, type DietFilter } from "./menuFilters";
@@ -21,6 +21,8 @@ export function OrderView({ id }: { id: string }) {
   const dispatch = useAppDispatch();
   const table = useAppSelector(selectTable(id));
   const session = useAppSelector(selectSession(id));
+  const soldOut = useAppSelector(selectSoldOut);
+  const soldOutSet = useMemo(() => new Set(soldOut), [soldOut]);
 
   const [category, setCategory] = useState(POPULAR);
   const [query, setQuery] = useState("");
@@ -82,6 +84,7 @@ export function OrderView({ id }: { id: string }) {
                 item={item}
                 qty={qtyOf.get(item.id) ?? 0}
                 priority={i < 4}
+                soldOut={soldOutSet.has(item.id)}
                 onAdd={() => dispatch(addItem({ tableId: id, itemId: item.id }))}
                 onDec={() => dispatch(decItem({ tableId: id, itemId: item.id }))}
               />

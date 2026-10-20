@@ -15,6 +15,7 @@ export const CSV_COLUMNS = [
   "SGST",
   "Round off",
   "Total",
+  "Status",
 ] as const;
 
 /** RFC 4180 quoting: wrap in quotes when needed, double any quotes inside. */
@@ -45,6 +46,7 @@ export function billsToCsv(bills: Bill[]): string {
       t.sgst.toFixed(2),
       t.roundOff.toFixed(2),
       t.total.toFixed(2),
+      b.voided ? `Void: ${b.voided.reason}` : "Paid",
     ];
   });
   return [CSV_COLUMNS, ...rows].map((r) => r.map(csvCell).join(",")).join("\r\n");

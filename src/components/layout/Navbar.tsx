@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { navLinks, routes } from "@/config/site";
 import { cn } from "@/lib/cn";
 import { useAppSelector } from "@/store/hooks";
-import { selectActiveCount } from "@/store/selectors";
+import { selectActiveCount, selectOpenTicketCount } from "@/store/selectors";
 import { ThemeToggle } from "@/components/ui";
 import { Logo } from "./Logo";
 import { NavPending } from "./NavPending";
@@ -14,6 +14,8 @@ import { NavPending } from "./NavPending";
 export function Navbar() {
   const path = usePathname();
   const active = useAppSelector(selectActiveCount);
+  const openTickets = useAppSelector(selectOpenTicketCount);
+  const badge: Record<string, number> = { [routes.floor]: active, [routes.kitchen]: openTickets };
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md print:hidden">
@@ -31,7 +33,7 @@ export function Navbar() {
                     <NavPending />
                   </span>
                   <span className="hidden md:inline">{label}</span>
-                  {href === routes.floor && active > 0 && <span className="rounded-full bg-accent-500 px-1.5 text-[10px] font-bold leading-4 text-amber-950">{active}</span>}
+                  {badge[href] > 0 && <span className="rounded-full bg-accent-500 px-1.5 text-[10px] font-bold leading-4 text-amber-950" aria-label={`(${badge[href]} open)`}>{badge[href]}</span>}
                 </span>
               </Link>
             );

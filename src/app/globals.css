@@ -183,6 +183,10 @@
   }
 }
 
+#print-root {
+  display: none;
+}
+
 @media print {
   @page {
     size: 80mm auto;
@@ -191,17 +195,19 @@
   body {
     background: #fff !important;
   }
-  body * {
-    visibility: hidden;
+  /* printElement() copies the receipt into #print-root; print only that. */
+  html.printing body > *:not(#print-root) {
+    display: none !important;
   }
-  #invoice,
-  #invoice * {
-    visibility: visible;
+  html.printing #print-root {
+    display: block;
   }
-  #invoice {
-    position: absolute;
-    inset: 0 auto auto 0;
-    width: 100%;
+  #print-root > * {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
   }
 }

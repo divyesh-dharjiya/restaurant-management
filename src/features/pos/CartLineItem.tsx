@@ -7,13 +7,15 @@ import type { CartLine } from "@/lib/billing";
 import { itemById } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { money } from "@/lib/format";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { selectSoldOut } from "@/store/selectors";
 import { addItem, decItem, removeItem, setNote } from "@/store/slices/posSlice";
 import { FoodImage, Stepper } from "@/components/ui";
 
 export function CartLineItem({ tableId, line }: { tableId: string; line: CartLine }) {
   const dispatch = useAppDispatch();
   const [editing, setEditing] = useState(false);
+  const soldOut = useAppSelector(selectSoldOut).includes(line.itemId);
   const item = itemById.get(line.itemId);
   if (!item) return null;
   const ids = { tableId, itemId: line.itemId };
@@ -37,7 +39,7 @@ export function CartLineItem({ tableId, line }: { tableId: string; line: CartLin
           </div>
           <div className="text-xs text-muted tabular-nums">{money(item.price)} each</div>
           <div className="mt-1.5 flex items-center justify-between">
-            <Stepper size="sm" qty={line.qty} label={item.name} onInc={() => dispatch(addItem(ids))} onDec={() => dispatch(decItem(ids))} />
+            <Stepper size="sm" qty={line.qty} label={item.name} onInc={() => dispatch(addItem(ids))} onDec={() => dispatch(decItem(ids))} incDisabled={soldOut} />
             <span className="text-sm font-bold tabular-nums">{money(item.price * line.qty)}</span>
           </div>
         </div>

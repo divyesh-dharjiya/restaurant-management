@@ -8,12 +8,15 @@ import { ArrowLeft, CheckCircle2, Printer, ReceiptText } from "lucide-react";
 import type { PaymentMode } from "@/types/pos";
 import { computeBill } from "@/lib/billing";
 import { money } from "@/lib/format";
+import { printElement } from "@/lib/print";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSession, selectTable } from "@/store/selectors";
 import { reopenTable, settleBill } from "@/store/slices/posSlice";
 import { EmptyState } from "@/components/ui";
 import { Invoice } from "@/features/bills/Invoice";
 import { PaymentPicker } from "./PaymentPicker";
+import { SplitBill } from "./SplitBill";
+import { unsentCount } from "@/lib/kitchen";
 import { routes } from "@/config/site";
 
 export function BillView({ id }: { id: string }) {
@@ -65,10 +68,18 @@ export function BillView({ id }: { id: string }) {
           <div className="mt-1 text-xs text-muted">incl. {money(totals.cgst + totals.sgst)} GST</div>
         </div>
 
+        {unsentCount(session) > 0 && (
+          <p role="note" className="rounded-xl bg-accent-soft p-3 text-xs font-medium text-accent-700 dark:text-accent-400">
+            {unsentCount(session)} {unsentCount(session) === 1 ? "dish was" : "dishes were"} never sent to the kitchen. Check they were served before settling.
+          </p>
+        )}
+
+        <SplitBill total={totals.total} guests={session.guests} />
+
         <PaymentPicker value={payment} onChange={setPayment} />
 
         <div className="grid gap-2">
-          <button onClick={() => window.print()} className="btn btn-ghost h-12"><Printer className="size-4" /> Print bill</button>
+          <button onClick={() => printElement(document.getElementById("invoice"))} className="btn btn-ghost h-12"><Printer className="size-4" /> Print bill</button>
           <button onClick={settle} className="btn btn-primary h-12"><CheckCircle2 className="size-4" /> Settle & free table</button>
         </div>
       </motion.aside>

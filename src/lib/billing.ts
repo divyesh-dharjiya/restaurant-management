@@ -51,3 +51,14 @@ export function computeBill(cart: CartLine[], discountPct = 0): BillTotals {
     total,
   };
 }
+
+/**
+ * Split a (whole-rupee) total between `ways` people in whole rupees.
+ * Shares differ by at most ₹1 and always add up to the total.
+ */
+export function splitEvenly(total: number, ways: number): number[] {
+  const n = Math.max(1, Math.floor(ways));
+  const base = Math.floor(total / n);
+  const extra = Math.round(total - base * n);
+  return Array.from({ length: n }, (_, i) => base + (i < extra ? 1 : 0));
+}

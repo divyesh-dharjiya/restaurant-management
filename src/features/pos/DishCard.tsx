@@ -6,13 +6,14 @@ import { cn } from "@/lib/cn";
 import { money } from "@/lib/format";
 import { Badge, FoodImage, Stepper } from "@/components/ui";
 
-type Props = { item: MenuItem; qty: number; priority?: boolean; onAdd: () => void; onDec: () => void };
+type Props = { item: MenuItem; qty: number; priority?: boolean; soldOut?: boolean; onAdd: () => void; onDec: () => void };
 
-export function DishCard({ item, qty, priority, onAdd, onDec }: Props) {
+export function DishCard({ item, qty, priority, soldOut, onAdd, onDec }: Props) {
   return (
-    <article className={cn("card cv-auto group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg", qty > 0 && "border-brand-600/60 ring-1 ring-brand-600/40")}>
-      <button onClick={onAdd} className="relative block overflow-hidden text-left" aria-label={`Add ${item.name}`}>
-        <FoodImage src={item.image} alt={item.name} priority={priority} className="aspect-[4/3] transition duration-500 group-hover:scale-[1.03]" />
+    <article className={cn("card cv-auto group flex flex-col overflow-hidden transition", !soldOut && "hover:-translate-y-0.5 hover:shadow-lg", qty > 0 && "border-brand-600/60 ring-1 ring-brand-600/40")}>
+      <button onClick={onAdd} disabled={soldOut} className="relative block overflow-hidden text-left disabled:cursor-not-allowed" aria-label={soldOut ? `${item.name}, sold out` : `Add ${item.name}`}>
+        <FoodImage src={item.image} alt={item.name} priority={priority} className={cn("aspect-[4/3] transition duration-500", soldOut ? "grayscale" : "group-hover:scale-[1.03]")} />
+        {soldOut && <span className="absolute inset-0 grid place-items-center bg-black/45 text-sm font-extrabold uppercase tracking-widest text-white">Sold out</span>}
         <div className="absolute inset-x-2 top-2 flex flex-wrap gap-1">
           {item.popular && <Badge tone="accent"><Flame className="size-3" /> Bestseller</Badge>}
           {item.isNew && <Badge tone="violet"><Sparkles className="size-3" /> New</Badge>}
@@ -28,8 +29,10 @@ export function DishCard({ item, qty, priority, onAdd, onDec }: Props) {
         {/* Wraps the stepper under the price when the card is narrow (2-up on phones). */}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <span className="font-extrabold tabular-nums">{money(item.price)}</span>
-          {qty > 0 ? (
-            <Stepper size="sm" qty={qty} onInc={onAdd} onDec={onDec} label={item.name} />
+          {soldOut && qty === 0 ? (
+            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">Unavailable</span>
+          ) : qty > 0 ? (
+            <Stepper size="sm" qty={qty} onInc={onAdd} onDec={onDec} label={item.name} incDisabled={soldOut} />
           ) : (
             <button
               onClick={onAdd}

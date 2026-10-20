@@ -9,6 +9,7 @@ import { clearCart } from "@/store/slices/posSlice";
 import { useConfirm } from "@/components/ui";
 import { CartLineItem } from "./CartLineItem";
 import { CartSummary } from "./CartSummary";
+import { KitchenSend } from "./KitchenSend";
 
 export function CartPanel({ tableId, onClose }: { tableId: string; onClose?: () => void }) {
   const session = useAppSelector(selectSession(tableId));
@@ -63,6 +64,7 @@ export function CartPanel({ tableId, onClose }: { tableId: string; onClose?: () 
         )}
       </div>
 
+      <KitchenSend tableId={tableId} />
       {cart.length > 0 && <CartSummary tableId={tableId} totals={totals} discountPct={session?.discountPct ?? 0} />}
     </div>
   );

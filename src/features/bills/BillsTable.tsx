@@ -28,6 +28,7 @@ export function BillsTable({ bills, onOpen }: { bills: Bill[]; onOpen: (id: stri
               <td className="whitespace-nowrap p-3 font-mono text-[11px] sm:p-4 sm:text-xs">
                 {b.number}
                 {b.demo && <span className="ml-2 hidden rounded sm:inline bg-surface-2 px-1.5 py-0.5 font-sans text-[10px] font-semibold text-subtle">sample</span>}
+                {b.voided && <span className="ml-2 rounded bg-rose-500/10 px-1.5 py-0.5 font-sans text-[10px] font-bold text-rose-700 dark:text-rose-300">VOID</span>}
               </td>
               <td className="whitespace-nowrap p-3 font-medium sm:p-4">{b.tableName}</td>
               <td className="hidden p-4 text-muted sm:table-cell">{dateTime(b.createdAt)}</td>

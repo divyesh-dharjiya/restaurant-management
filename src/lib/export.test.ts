@@ -28,6 +28,11 @@ describe("billsToCsv", () => {
   it("writes a header and one row per bill with GST columns", () => {
     const [header, row] = billsToCsv([bill]).split("\r\n");
     expect(header).toBe(CSV_COLUMNS.join(","));
-    expect(row).toBe('INV-20261019-0001,2026-10-19,20:05,"Booth 1, Lounge",3,UPI,2,560.00,0.00,560.00,14.00,14.00,0.00,588.00');
+    expect(row).toBe('INV-20261019-0001,2026-10-19,20:05,"Booth 1, Lounge",3,UPI,2,560.00,0.00,560.00,14.00,14.00,0.00,588.00,Paid');
+  });
+
+  it("marks voided bills with their reason", () => {
+    const row = billsToCsv([{ ...bill, voided: { at: 0, reason: "wrong table, re-billed" } }]).split("\r\n")[1];
+    expect(row.endsWith(',"Void: wrong table, re-billed"')).toBe(true);
   });
 });

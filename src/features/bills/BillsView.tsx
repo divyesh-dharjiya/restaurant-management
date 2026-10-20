@@ -2,9 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { useQueryParam } from "@/hooks/useQueryParam";
-import { CheckCircle2, IndianRupee, Landmark, Printer, ReceiptText, Search, Wallet } from "lucide-react";
+import { Ban, CheckCircle2, IndianRupee, Landmark, Printer, ReceiptText, Search, Wallet } from "lucide-react";
 import { summarize } from "@/lib/analytics";
 import { count, moneyWhole } from "@/lib/format";
+import { printElement } from "@/lib/print";
 import { useAppSelector } from "@/store/hooks";
 import { selectBills } from "@/store/selectors";
 import { EmptyState, Modal, PageHeader, Segmented, StatCard } from "@/components/ui";
@@ -12,6 +13,7 @@ import { BILL_RANGES, billsInRange, type BillRange } from "./billRanges";
 import { BillsTable } from "./BillsTable";
 import { Invoice } from "./Invoice";
 import { DataTools } from "./DataTools";
+import { VoidBill } from "./VoidBill";
 
 const PAGE = 25;
 
@@ -27,7 +29,7 @@ export function BillsView() {
     const s = q.trim().toLowerCase();
     return billsInRange(bills, range, new Date()).filter((b) => !s || b.number.toLowerCase().includes(s) || b.tableName.toLowerCase().includes(s));
   }, [bills, range, q]);
-  const sum = summarize(list);
+  const sum = summarize(list.filter((b) => !b.voided));
 
   const openBill = (id: string) => setOpenId(id);
   const close = () => setOpenId(null);
@@ -79,15 +81,22 @@ export function BillsView() {
         title={
           open && (
             <div className="flex items-center justify-between gap-2 pr-2">
-              <span className="flex items-center gap-2 text-sm font-semibold text-brand-700 dark:text-brand-400"><CheckCircle2 className="size-4" /> Paid via {open.payment}</span>
-              <button onClick={() => window.print()} className="btn btn-ghost h-9"><Printer className="size-4" /> Print</button>
+              {open.voided ? (
+                <span className="flex items-center gap-2 text-sm font-semibold text-rose-600 dark:text-rose-400"><Ban className="size-4" /> Voided</span>
+              ) : (
+                <span className="flex items-center gap-2 text-sm font-semibold text-brand-700 dark:text-brand-400"><CheckCircle2 className="size-4" /> Paid via {open.payment}</span>
+              )}
+              <button onClick={() => printElement(document.getElementById("invoice"))} className="btn btn-ghost h-9"><Printer className="size-4" /> Print</button>
             </div>
           )
         }
       >
         {open && (
-          <div className="-m-5 bg-surface-2 p-5">
-            <Invoice number={open.number} tableName={open.tableName} guests={open.guests} createdAt={open.createdAt} totals={open.totals} payment={open.payment} />
+          <div className="space-y-4">
+            <div className="-mx-5 -mt-5 bg-surface-2 p-5">
+              <Invoice number={open.number} tableName={open.tableName} guests={open.guests} createdAt={open.createdAt} totals={open.totals} payment={open.payment} voided={!!open.voided} />
+            </div>
+            <VoidBill key={open.id} bill={open} />
           </div>
         )}
       </Modal>

@@ -9,13 +9,19 @@ type Props = {
   createdAt: number;
   totals: BillTotals;
   payment?: string;
+  voided?: boolean;
 };
 
 /** Thermal-receipt style GST tax invoice. `id="invoice"` is what gets printed. */
-export function Invoice({ number, tableName, guests, createdAt, totals: t, payment }: Props) {
+export function Invoice({ number, tableName, guests, createdAt, totals: t, payment, voided }: Props) {
   const d = new Date(createdAt);
   return (
-    <div id="invoice" className="mx-auto w-full max-w-sm rounded-2xl bg-[#fdfcf9] p-6 font-mono text-[12px] leading-relaxed text-zinc-800 border border-black/5 shadow-lg">
+    <div id="invoice" className="relative mx-auto w-full max-w-sm rounded-2xl bg-[#fdfcf9] p-6 font-mono text-[12px] leading-relaxed text-zinc-800 border border-black/5 shadow-lg">
+      {voided && (
+        <div className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden>
+          <span className="-rotate-12 rounded-lg border-4 border-rose-600/70 px-4 py-1 font-sans text-5xl font-black tracking-widest text-rose-600/70">VOID</span>
+        </div>
+      )}
       <div className="text-center">
         <div className="font-sans text-lg font-bold tracking-tight text-zinc-900">{business.name}</div>
         <div className="mt-1 font-sans text-xs text-zinc-600">GSTIN: {business.gstin}</div>

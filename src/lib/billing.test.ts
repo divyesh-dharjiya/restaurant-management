@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeBill } from "./billing";
+import { computeBill, splitEvenly } from "./billing";
 
 // Prices from menu.json: Paneer Tikka ₹280, Butter Naan ₹60.
 const cart = [
@@ -47,5 +47,22 @@ describe("computeBill", () => {
   it("returns zeros for an empty cart", () => {
     const t = computeBill([]);
     expect(t).toMatchObject({ subtotal: 0, cgst: 0, sgst: 0, total: 0, itemCount: 0 });
+  });
+});
+
+describe("splitEvenly", () => {
+  it.each([
+    [1000, 4, [250, 250, 250, 250]],
+    [1001, 4, [251, 250, 250, 250]],
+    [1003, 3, [335, 334, 334]],
+    [500, 1, [500]],
+  ])("₹%i between %i", (total, ways, shares) => {
+    expect(splitEvenly(total, ways)).toEqual(shares);
+    expect(splitEvenly(total, ways).reduce((a, b) => a + b, 0)).toBe(total);
+  });
+
+  it("treats nonsense counts as one payer", () => {
+    expect(splitEvenly(300, 0)).toEqual([300]);
+    expect(splitEvenly(300, -2)).toEqual([300]);
   });
 });
