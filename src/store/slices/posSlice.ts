@@ -2,9 +2,12 @@ import { createSlice, nanoid, type PayloadAction } from "@reduxjs/toolkit";
 import { computeBill } from "@/lib/billing";
 import { seedTables } from "@/lib/catalog";
 import { ymd } from "@/lib/format";
-import type { Booking, PaymentMode, PosState, Table } from "@/types/pos";
+import { nextStatus, pendingLines, pruneTickets, sentSnapshot } from "@/lib/kitchen";
+import type { Booking, PaymentMode, PosState, Table, TicketStatus } from "@/types/pos";
 
-export const initialState: PosState = { tables: seedTables, sessions: {}, bookings: [], bills: [], billSeq: 0, seedVersion: 0 };
+export const initialState: PosState = { tables: seedTables, sessions: {}, bookings: [], bills: [], billSeq: 0, tickets: [], kotSeq: 0, soldOut: [], seedVersion: 0 };
+
+const tableName = (state: PosState, id: string) => state.tables.find((t) => t.id === id)?.name ?? id;
 
 /**
  * Seat guests at a table. Never touches reservations: a walk-in can use a table
@@ -34,6 +37,7 @@ const posSlice = createSlice({
 
     // ── Orders ────────────────────────────────────────────
     addItem(state, { payload }: PayloadAction<TI>) {
+      if (state.soldOut.includes(payload.itemId)) return;
       const s = seat(state, payload.tableId);
       s.billRequested = false;
       const line = s.cart.find((l) => l.itemId === payload.itemId);
@@ -78,14 +82,17 @@ const posSlice = createSlice({
     seatTable(state, { payload }: PayloadAction<{ tableId: string; guests?: number; guestName?: string }>) {
       seat(state, payload.tableId, payload.guests, payload.guestName);
     },
+    /** Guests left without a bill: the order is abandoned, so its open tickets leave the kitchen too. */
     freeTable(state, { payload }: PayloadAction<string>) {
       delete state.sessions[payload];
+      state.tickets = state.tickets.filter((t) => t.tableId !== payload || t.status === "served");
     },
     moveTable(state, { payload }: PayloadAction<{ from: string; to: string }>) {
       const s = state.sessions[payload.from];
       if (!s || state.sessions[payload.to]) return;
       state.sessions[payload.to] = s;
       delete state.sessions[payload.from];
+      for (const t of state.tickets) if (t.tableId === payload.from && t.status !== "served") Object.assign(t, { tableId: payload.to, tableName: tableName(state, payload.to) });
     },
     bookTable: {
       reducer(state, { payload }: PayloadAction<Booking>) {
@@ -136,7 +143,7 @@ const posSlice = createSlice({
           id: payload.id,
           number: `INV-${ymd(new Date(payload.at))}-${String(state.billSeq).padStart(4, "0")}`,
           tableId: payload.tableId,
-          tableName: state.tables.find((t) => t.id === payload.tableId)?.name ?? payload.tableId,
+          tableName: tableName(state, payload.tableId),
           guests: s.guests,
           createdAt: payload.at,
           payment: payload.payment,
@@ -144,11 +151,56 @@ const posSlice = createSlice({
           totals: computeBill(s.cart, s.discountPct),
         });
         delete state.sessions[payload.tableId];
+        for (const t of state.tickets) if (t.tableId === payload.tableId) t.status = "served";
       },
       prepare(tableId: string, payment: PaymentMode) {
         return { payload: { tableId, payment, id: nanoid(), at: Date.now() } };
       },
     },
+    /** Cancel a settled bill. It stays on record (numbering has no gaps) but leaves sales figures. */
+    voidBill: {
+      reducer(state, { payload }: PayloadAction<{ id: string; reason: string; at: number }>) {
+        const b = state.bills.find((x) => x.id === payload.id);
+        if (b && !b.voided) b.voided = { at: payload.at, reason: payload.reason.trim() || "No reason given" };
+      },
+      prepare(id: string, reason: string) {
+        return { payload: { id, reason, at: Date.now() } };
+      },
+    },
+
+    // ── Kitchen ───────────────────────────────────────────
+    sendToKitchen: {
+      reducer(state, { payload }: PayloadAction<{ tableId: string; id: string; at: number }>) {
+        const s = state.sessions[payload.tableId];
+        if (!s) return;
+        const lines = pendingLines(s);
+        if (!lines.length) return;
+        state.kotSeq++;
+        state.tickets = pruneTickets(state.tickets, payload.at);
+        state.tickets.push({
+          id: payload.id,
+          number: `KOT-${String(state.kotSeq).padStart(4, "0")}`,
+          tableId: payload.tableId,
+          tableName: tableName(state, payload.tableId),
+          createdAt: payload.at,
+          status: "new",
+          lines,
+        });
+        s.sent = sentSnapshot(s);
+      },
+      prepare(tableId: string) {
+        return { payload: { tableId, id: nanoid(), at: Date.now() } };
+      },
+    },
+    /** Move a ticket to a given status, or one step forward when none is given. */
+    setTicketStatus(state, { payload }: PayloadAction<{ id: string; status?: TicketStatus }>) {
+      const t = state.tickets.find((x) => x.id === payload.id);
+      if (t) t.status = payload.status ?? nextStatus(t.status);
+    },
+    toggleSoldOut(state, { payload }: PayloadAction<string>) {
+      state.soldOut = state.soldOut.includes(payload) ? state.soldOut.filter((id) => id !== payload) : [...state.soldOut, payload];
+    },
+
     removeDemoBills(state) {
       state.bills = state.bills.filter((b) => !b.demo);
     },
@@ -161,7 +213,7 @@ const posSlice = createSlice({
 
 export const {
   replace, addItem, decItem, removeItem, clearCart, setNote, setGuests, setDiscount, requestBill, reopenTable,
-  seatTable, seatBooking, freeTable, moveTable, bookTable, cancelBooking, addTable, updateTable, removeTable, settleBill, removeDemoBills, archiveBills,
+  seatTable, seatBooking, freeTable, moveTable, bookTable, cancelBooking, addTable, updateTable, removeTable, settleBill, voidBill, sendToKitchen, setTicketStatus, toggleSoldOut, removeDemoBills, archiveBills,
 } = posSlice.actions;
 
 export default posSlice.reducer;

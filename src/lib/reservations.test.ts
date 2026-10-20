@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Booking } from "@/types/pos";
 import { toLocalInput } from "./format";
-import { bookingState, clashes, holdingBooking, minutesLate } from "./reservations";
+import { bookingState, bookingsOnDay, clashes, holdingBooking, minutesLate, pruneStaleBookings } from "./reservations";
 
 const NOW = new Date(2026, 9, 19, 19, 0).getTime();
 const at = (minFromNow: number) => toLocalInput(new Date(NOW + minFromNow * 60_000));
@@ -41,5 +41,19 @@ describe("clashes", () => {
   it("ignores other tables and the booking being edited", () => {
     expect(clashes(list, "T2", at(60))).toEqual([]);
     expect(clashes(list, "T1", at(60), "lunch")).toEqual([]);
+  });
+});
+
+describe("stale bookings", () => {
+  const at = (iso: string) => ({ id: iso, tableId: "T1", name: "x", phone: "", guests: 2, at: iso, createdAt: 0 });
+  it("drops bookings more than 12 hours past, keeps the rest", () => {
+    const now = new Date("2026-10-20T12:00").getTime();
+    const kept = pruneStaleBookings([at("2026-10-19T20:00"), at("2026-10-19T23:30"), at("2026-10-20T00:30"), at("2026-10-20T19:00")], now);
+    expect(kept.map((b) => b.at)).toEqual(["2026-10-20T00:30", "2026-10-20T19:00"]);
+  });
+
+  it("counts only today's bookings", () => {
+    const now = new Date("2026-10-20T12:00").getTime();
+    expect(bookingsOnDay([at("2026-10-19T23:30"), at("2026-10-20T19:00"), at("2026-10-21T13:00")], now).map((b) => b.at)).toEqual(["2026-10-20T19:00"]);
   });
 });

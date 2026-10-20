@@ -3,14 +3,14 @@
 import { CalendarClock, Phone, UserCheck, Users, X } from "lucide-react";
 import type { Booking } from "@/types/pos";
 import { cn } from "@/lib/cn";
-import { bookingTime as fmtBookingTime } from "@/lib/format";
-import { bookingState, minutesLate } from "@/lib/reservations";
+import { elapsed, bookingTime as fmtBookingTime } from "@/lib/format";
+import { bookingState, bookingTime } from "@/lib/reservations";
 
 /** Small chip describing where a booking stands right now. */
 export function BookingStateChip({ booking, now }: { booking: Booking; now: number }) {
   const state = bookingState(booking, now);
   if (state === "late") {
-    return <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300">Late {minutesLate(booking, now)}m</span>;
+    return <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300">Late {elapsed(bookingTime(booking), now)}</span>;
   }
   if (state === "due") return <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300">Due now</span>;
   return <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-muted">Upcoming</span>;

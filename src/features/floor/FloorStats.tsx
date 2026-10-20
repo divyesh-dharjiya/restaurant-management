@@ -7,6 +7,7 @@ import { useAppSelector, useIsClient } from "@/store/hooks";
 import { selectPos } from "@/store/selectors";
 import { StatCard } from "@/components/ui";
 import { useNow } from "@/hooks/useNow";
+import { bookingsOnDay } from "@/lib/reservations";
 
 export function FloorStats() {
   const { tables, sessions, bookings, bills } = useAppSelector(selectPos);
@@ -16,9 +17,8 @@ export function FloorStats() {
   const running = Object.values(sessions).reduce((s, o) => s + computeBill(o.cart, o.discountPct).total, 0);
   // "Today" depends on the viewer's clock, so only compute it in the browser.
   const today = isClient ? new Date().toDateString() : "";
-  const endOfDay = new Date(now).setHours(23, 59, 59, 999);
-  const bookingsToday = bookings.filter((b) => new Date(b.at).getTime() <= endOfDay).length;
-  const todayRevenue = bills.filter((b) => new Date(b.createdAt).toDateString() === today).reduce((s, b) => s + b.totals.total, 0);
+  const bookingsToday = bookingsOnDay(bookings, now).length;
+  const todayRevenue = bills.filter((b) => !b.voided && new Date(b.createdAt).toDateString() === today).reduce((s, b) => s + b.totals.total, 0);
 
   return (
     <section className="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Today at a glance">

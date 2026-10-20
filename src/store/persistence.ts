@@ -1,5 +1,7 @@
-import type { Booking, PosState } from "@/types/pos";
+import type { Booking, KitchenTicket, PosState } from "@/types/pos";
 import { generateDemoBills } from "@/lib/demo-bills";
+import { pruneTickets } from "@/lib/kitchen";
+import { pruneStaleBookings } from "@/lib/reservations";
 import { initialState } from "./slices/posSlice";
 import { reportSave } from "./storageHealth";
 
@@ -44,6 +46,9 @@ export function normalizeState(raw: unknown): PosState | null {
     bookings: normalizeBookings(raw.bookings),
     bills,
     billSeq: typeof raw.billSeq === "number" ? raw.billSeq : 0,
+    tickets: Array.isArray(raw.tickets) ? raw.tickets.filter((t): t is KitchenTicket => isObj(t) && typeof t.id === "string" && Array.isArray(t.lines)) : [],
+    kotSeq: typeof raw.kotSeq === "number" ? raw.kotSeq : 0,
+    soldOut: Array.isArray(raw.soldOut) ? raw.soldOut.filter((id): id is string => typeof id === "string") : [],
     seedVersion: typeof raw.seedVersion === "number" ? raw.seedVersion : 0,
   };
 }
@@ -86,7 +91,12 @@ export function readSaved(): PosState | null {
 /** Restore state on the client, seeding sample bills when needed. Undefined on the server. */
 export function loadState(): PosState | undefined {
   if (typeof window === "undefined") return undefined;
-  return withCurrentSamples(readSaved() ?? initialState);
+  return tidy(withCurrentSamples(readSaved() ?? initialState));
+}
+
+/** Drop yesterday's no-shows and old served kitchen tickets when the app opens. */
+export function tidy(state: PosState, now = Date.now()): PosState {
+  return { ...state, bookings: pruneStaleBookings(state.bookings, now), tickets: pruneTickets(state.tickets, now) };
 }
 
 const written = { state: "", bills: "" };

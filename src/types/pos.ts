@@ -12,6 +12,8 @@ export type Session = {
   discountPct: number;
   openedAt: number;
   billRequested: boolean;
+  /** Quantity of each dish already sent to the kitchen (KOT), by item id. */
+  sent?: Record<string, number>;
 };
 
 export type Booking = {
@@ -41,6 +43,21 @@ export type Bill = {
   totals: BillTotals;
   /** Sample data generated for the demo dashboard. */
   demo?: boolean;
+  /** Cancelled after settling (wrong table, refund). Kept for the audit trail, left out of sales. */
+  voided?: { at: number; reason: string };
+};
+
+export type TicketStatus = "new" | "preparing" | "ready" | "served";
+
+/** One kitchen order ticket (KOT). A negative qty is a cancellation of something already sent. */
+export type KitchenTicket = {
+  id: string;
+  number: string;
+  tableId: string;
+  tableName: string;
+  createdAt: number;
+  status: TicketStatus;
+  lines: { itemId: string; name: string; qty: number; note?: string }[];
 };
 
 export type TableStatus = "free" | "reserved" | "seated" | "ordering" | "billing";
@@ -52,6 +69,11 @@ export type PosState = {
   bookings: Booking[];
   bills: Bill[];
   billSeq: number;
+  /** Kitchen tickets for today's service. Served tickets are pruned after a day. */
+  tickets: KitchenTicket[];
+  kotSeq: number;
+  /** Dishes marked unavailable (86'd) for now. */
+  soldOut: string[];
   /** Bumped when sample data is added so it is only seeded once per browser. */
   seedVersion: number;
 };

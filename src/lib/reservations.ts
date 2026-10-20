@@ -34,3 +34,14 @@ export function clashes(list: Booking[], tableId: string, at: string, ignoreId?:
   const t = bookingTime({ at });
   return list.filter((b) => b.tableId === tableId && b.id !== ignoreId && Math.abs(bookingTime(b) - t) < MIN_GAP_MIN * MIN);
 }
+
+/** A booking this far past its time is a no-show nobody cleared; it no longer belongs on the floor. */
+export const STALE_AFTER_MIN = 12 * 60;
+
+export const pruneStaleBookings = (list: Booking[], now: number) => list.filter((b) => now - bookingTime(b) < STALE_AFTER_MIN * MIN);
+
+/** Bookings whose time falls on the same calendar day as `now`. */
+export const bookingsOnDay = (list: Booking[], now: number) => {
+  const day = new Date(now).toDateString();
+  return list.filter((b) => new Date(bookingTime(b)).toDateString() === day);
+};
