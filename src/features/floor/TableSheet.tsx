@@ -9,6 +9,7 @@ import { Modal, StatusPill } from "@/components/ui";
 import { TableOverview } from "./TableOverview";
 import { BookingForm } from "./BookingForm";
 import { SeatForm } from "./SeatForm";
+import { routes } from "@/config/site";
 
 type Mode = "view" | "book" | "seat";
 
@@ -21,7 +22,7 @@ export function TableSheet({ tableId, onClose, onEdit }: { tableId: string | nul
   const router = useRouter();
   // Warm up the order screen while staff decide, so "Take order" opens instantly.
   useEffect(() => {
-    if (tableId) router.prefetch(`/table/${tableId}`);
+    if (tableId) router.prefetch(routes.table(tableId));
   }, [tableId, router]);
   const close = () => {
     setMode("view");

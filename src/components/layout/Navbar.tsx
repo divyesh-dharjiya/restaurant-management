@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { navLinks } from "@/config/site";
+import { navLinks, routes } from "@/config/site";
 import { cn } from "@/lib/cn";
 import { useAppSelector } from "@/store/hooks";
 import { selectActiveCount } from "@/store/selectors";
@@ -18,7 +18,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md print:hidden">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-4 sm:gap-3 sm:px-6">
-        <Logo />
+        <Logo href={routes.floor} />
         <nav className="ml-auto flex items-center gap-1 rounded-2xl border border-line bg-surface p-1" aria-label="Main">
           {navLinks.map(({ href, label, icon: Icon, match }) => {
             const on = match(path);
@@ -31,7 +31,7 @@ export function Navbar() {
                     <NavPending />
                   </span>
                   <span className="hidden md:inline">{label}</span>
-                  {href === "/" && active > 0 && <span className="rounded-full bg-accent-500 px-1.5 text-[10px] font-bold leading-4 text-amber-950">{active}</span>}
+                  {href === routes.floor && active > 0 && <span className="rounded-full bg-accent-500 px-1.5 text-[10px] font-bold leading-4 text-amber-950">{active}</span>}
                 </span>
               </Link>
             );

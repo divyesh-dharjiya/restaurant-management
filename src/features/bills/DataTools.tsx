@@ -11,6 +11,7 @@ import { selectPos } from "@/store/selectors";
 import { archiveBills, removeDemoBills, replace } from "@/store/slices/posSlice";
 import { STORAGE_BUDGET_CHARS, useStorageHealth, usageRatio, WARN_AT } from "@/store/storageHealth";
 import { cn } from "@/lib/cn";
+import { useConfirm } from "@/components/ui";
 
 /** Bills older than this can be archived (kept 2 years so "last year" comparisons still work). */
 const ARCHIVE_AFTER_YEARS = 2;
@@ -19,6 +20,7 @@ const ARCHIVE_AFTER_YEARS = 2;
 export function DataTools({ filtered, rangeLabel }: { filtered: Bill[]; rangeLabel: string }) {
   const state = useAppSelector(selectPos);
   const dispatch = useAppDispatch();
+  const confirm = useConfirm();
   const health = useStorageHealth();
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
@@ -35,7 +37,7 @@ export function DataTools({ filtered, rangeLabel }: { filtered: Bill[]; rangeLab
     try {
       const next = normalizeState(JSON.parse(await file.text()));
       if (!next) throw new Error("not an EatingHUB backup");
-      if (!confirm(`Replace all current data with this backup (${count(next.bills.length)} bills, ${next.tables.length} tables)?`)) return;
+      if (!(await confirm({ title: "Restore this backup?", body: `All current data will be replaced with ${count(next.bills.length)} bills and ${next.tables.length} tables from ${file.name}.`, confirmLabel: "Replace data", danger: true }))) return;
       dispatch(replace(next));
       setMessage({ tone: "ok", text: `Restored ${count(next.bills.length)} bills from ${file.name}.` });
     } catch (e) {
@@ -43,8 +45,8 @@ export function DataTools({ filtered, rangeLabel }: { filtered: Bill[]; rangeLab
     }
   };
 
-  const archive = () => {
-    if (!confirm(`Download ${archivable.length} bills older than ${ARCHIVE_AFTER_YEARS} years, then remove them from this device?`)) return;
+  const archive = async () => {
+    if (!(await confirm({ title: `Archive ${archivable.length} old bills?`, body: `Bills older than ${ARCHIVE_AFTER_YEARS} years are downloaded as a file, then removed from this device.`, confirmLabel: "Download and archive" }))) return;
     downloadFile(`eatinghub-archive-before-${stamp(new Date(cutoff))}.json`, JSON.stringify({ bills: archivable }), "application/json");
     dispatch(archiveBills({ before: cutoff }));
     setMessage({ tone: "ok", text: `Archived ${archivable.length} bills. Keep the downloaded file safe.` });
@@ -79,7 +81,7 @@ export function DataTools({ filtered, rangeLabel }: { filtered: Bill[]; rangeLab
         <button
           className="btn btn-ghost"
           disabled={!sampleCount}
-          onClick={() => confirm(`Remove ${sampleCount} sample bills? Your real bills are kept.`) && dispatch(removeDemoBills())}
+          onClick={async () => (await confirm({ title: `Remove ${sampleCount} sample bills?`, body: "Your real bills are kept.", confirmLabel: "Remove samples", danger: true })) && dispatch(removeDemoBills())}
         >
           <Trash2 className="size-4" /> Remove samples
         </button>

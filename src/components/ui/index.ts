@@ -12,3 +12,4 @@ export { StatusPill } from "./StatusPill";
 export { statusTheme } from "./status";
 export { Stepper } from "./Stepper";
 export { ThemeToggle, themeInitScript } from "./ThemeToggle";
+export { ConfirmProvider, useConfirm } from "./ConfirmDialog";

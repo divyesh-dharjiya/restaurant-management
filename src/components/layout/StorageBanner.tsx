@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { useStorageHealth, usageRatio, WARN_AT } from "@/store/storageHealth";
+import { routes } from "@/config/site";
 
 /** App-wide warning when saving failed or browser storage is nearly full. */
 export function StorageBanner() {
@@ -19,7 +20,7 @@ export function StorageBanner() {
             ? `Browser storage is ${Math.round(ratio * 100)}% full. Back up and archive old bills soon.`
             : "Your latest changes could not be saved — browser storage is full or blocked. Back up now to avoid losing bills."}
         </span>
-        <Link href="/bills#data" className="font-semibold underline underline-offset-2">Back up now</Link>
+        <Link href={`${routes.bills}#data`} className="font-semibold underline underline-offset-2">Back up now</Link>
       </div>
     </div>
   );

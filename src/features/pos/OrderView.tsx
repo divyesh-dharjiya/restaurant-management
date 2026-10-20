@@ -15,6 +15,7 @@ import { DishCard } from "./DishCard";
 import { CartPanel } from "./CartPanel";
 import { MobileCart } from "./MobileCart";
 import { OrderHeader } from "./OrderHeader";
+import { routes } from "@/config/site";
 
 export function OrderView({ id }: { id: string }) {
   const dispatch = useAppDispatch();
@@ -33,7 +34,7 @@ export function OrderView({ id }: { id: string }) {
   if (!table) {
     return (
       <EmptyState icon={UtensilsCrossed} title="This table doesn’t exist">
-        It may have been removed. <Link href="/" className="font-semibold text-brand-700 underline dark:text-brand-400">Back to floor</Link>
+        It may have been removed. <Link href={routes.floor} className="font-semibold text-brand-700 underline dark:text-brand-400">Back to floor</Link>
       </EmptyState>
     );
   }

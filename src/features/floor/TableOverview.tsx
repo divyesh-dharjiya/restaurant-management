@@ -9,13 +9,16 @@ import { useNow } from "@/hooks/useNow";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectBookings, selectSession } from "@/store/selectors";
 import { cancelBooking, freeTable, removeTable, seatBooking, seatTable } from "@/store/slices/posSlice";
+import { useConfirm } from "@/components/ui";
 import { BookingCard } from "./BookingCard";
+import { routes } from "@/config/site";
 
 type Props = { tableId: string; onBook: () => void; onSeat: () => void; onEdit: () => void; onClose: () => void };
 
 export function TableOverview({ tableId, onBook, onSeat, onEdit, onClose }: Props) {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const confirm = useConfirm();
   const session = useAppSelector(selectSession(tableId));
   const allBookings = useAppSelector(selectBookings);
   const now = useNow();
@@ -52,19 +55,19 @@ export function TableOverview({ tableId, onBook, onSeat, onEdit, onClose }: Prop
       <div className="grid gap-2">
         {session ? (
           <>
-            <button className="btn btn-primary h-12" onClick={() => go(`/table/${tableId}`)}>
+            <button className="btn btn-primary h-12" onClick={() => go(routes.table(tableId))}>
               <Utensils className="size-4" /> {session.cart.length ? "Open order" : "Take order"}
             </button>
             {session.cart.length > 0 && (
-              <button className="btn btn-ghost h-12" onClick={() => go(`/table/${tableId}/bill`)}>
+              <button className="btn btn-ghost h-12" onClick={() => go(routes.bill(tableId))}>
                 <ReceiptText className="size-4" /> Generate bill
               </button>
             )}
             <div className="grid grid-cols-2 gap-2">
               <button
                 className="btn btn-danger h-12"
-                onClick={() => {
-                  if (session.cart.length && !confirm("This table has unbilled items. Free it anyway?")) return;
+                onClick={async () => {
+                  if (session.cart.length && !(await confirm({ title: "Free this table?", body: "It has unbilled items. They will be discarded without a bill.", confirmLabel: "Free table", danger: true }))) return;
                   dispatch(freeTable(tableId));
                 }}
               >
@@ -79,7 +82,7 @@ export function TableOverview({ tableId, onBook, onSeat, onEdit, onClose }: Prop
               className="btn btn-primary h-12"
               onClick={() => {
                 dispatch(seatTable({ tableId }));
-                go(`/table/${tableId}`);
+                go(routes.table(tableId));
               }}
             >
               <Utensils className="size-4" /> Take order now
@@ -102,7 +105,7 @@ export function TableOverview({ tableId, onBook, onSeat, onEdit, onClose }: Prop
               now={now}
               canSeat={!session}
               onArrived={() => dispatch(seatBooking(b.id))}
-              onCancel={() => confirm(`Remove ${b.name}'s booking?`) && dispatch(cancelBooking(b.id))}
+              onCancel={async () => (await confirm({ title: `Remove ${b.name}'s booking?`, confirmLabel: "Remove booking", danger: true })) && dispatch(cancelBooking(b.id))}
             />
           ))}
         </div>
@@ -113,9 +116,9 @@ export function TableOverview({ tableId, onBook, onSeat, onEdit, onClose }: Prop
         <button
           disabled={!!session}
           title={session ? "Free the table first" : undefined}
-          onClick={() => {
-            const msg = bookings.length ? `Remove this table and its ${bookings.length} reservation(s)?` : "Remove this table from the floor?";
-            if (!confirm(msg)) return;
+          onClick={async () => {
+            const body = bookings.length ? `Its ${bookings.length} reservation(s) will be removed too.` : undefined;
+            if (!(await confirm({ title: "Remove this table from the floor?", body, confirmLabel: "Remove table", danger: true }))) return;
             dispatch(removeTable(tableId));
             onClose();
           }}

@@ -9,6 +9,7 @@ import { selectPos, tableStatus } from "@/store/selectors";
 import { moveTable, setGuests } from "@/store/slices/posSlice";
 import { StatusPill, Stepper } from "@/components/ui";
 import { useNow } from "@/hooks/useNow";
+import { routes } from "@/config/site";
 
 export function OrderHeader({ table }: { table: Table }) {
   const router = useRouter();
@@ -22,7 +23,7 @@ export function OrderHeader({ table }: { table: Table }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <Link href="/" className="grid size-10 place-items-center rounded-xl border border-line bg-surface hover:bg-surface-2" aria-label="Back to floor">
+      <Link href={routes.floor} className="grid size-10 place-items-center rounded-xl border border-line bg-surface hover:bg-surface-2" aria-label="Back to floor">
         <ArrowLeft className="size-4" />
       </Link>
       <div className="mr-auto">
@@ -44,7 +45,7 @@ export function OrderHeader({ table }: { table: Table }) {
             aria-label="Move order to another table"
             onChange={(e) => {
               dispatch(moveTable({ from: id, to: e.target.value }));
-              router.replace(`/table/${e.target.value}`);
+              router.replace(routes.table(e.target.value));
             }}
             className="bg-transparent text-fg outline-none"
           >

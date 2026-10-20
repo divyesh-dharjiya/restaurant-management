@@ -14,6 +14,7 @@ import { reopenTable, settleBill } from "@/store/slices/posSlice";
 import { EmptyState } from "@/components/ui";
 import { Invoice } from "@/features/bills/Invoice";
 import { PaymentPicker } from "./PaymentPicker";
+import { routes } from "@/config/site";
 
 export function BillView({ id }: { id: string }) {
   const table = useAppSelector(selectTable(id));
@@ -29,7 +30,7 @@ export function BillView({ id }: { id: string }) {
   if (!table || !session?.cart.length) {
     return (
       <EmptyState icon={ReceiptText} title="No open order for this table">
-        <Link href="/" className="font-semibold text-brand-700 underline dark:text-brand-400">Back to floor</Link>
+        <Link href={routes.floor} className="font-semibold text-brand-700 underline dark:text-brand-400">Back to floor</Link>
       </EmptyState>
     );
   }
@@ -51,7 +52,7 @@ export function BillView({ id }: { id: string }) {
         <button
           onClick={() => {
             dispatch(reopenTable(id));
-            router.push(`/table/${id}`);
+            router.push(routes.table(id));
           }}
           className="flex items-center gap-2 text-sm text-muted hover:text-fg"
         >
@@ -89,8 +90,8 @@ function PaymentDone({ billId, total, tableName, payment }: { billId: string; to
       <h1 className="mt-4 text-xl font-extrabold">Payment received</h1>
       <p className="mt-1 text-muted">{money(total)} via {payment} · {tableName} is now free</p>
       <div className="mt-6 grid grid-cols-2 gap-2">
-        <Link href={`/bills?id=${billId}`} className="btn btn-ghost"><ReceiptText className="size-4" /> View invoice</Link>
-        <Link href="/" className="btn btn-primary">Back to floor</Link>
+        <Link href={routes.invoice(billId)} className="btn btn-ghost"><ReceiptText className="size-4" /> View invoice</Link>
+        <Link href={routes.floor} className="btn btn-primary">Back to floor</Link>
       </div>
     </motion.div>
   );

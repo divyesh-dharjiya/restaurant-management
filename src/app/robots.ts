@@ -3,7 +3,7 @@ import { privatePaths, site } from "@/config/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: ["/menu"], disallow: privatePaths },
+    rules: { userAgent: "*", allow: "/", disallow: privatePaths },
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,
   };

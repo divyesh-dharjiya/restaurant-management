@@ -7,6 +7,7 @@ import { tax } from "@/lib/catalog";
 import { money } from "@/lib/format";
 import { useAppDispatch } from "@/store/hooks";
 import { requestBill, setDiscount } from "@/store/slices/posSlice";
+import { routes } from "@/config/site";
 
 export function CartSummary({ tableId, totals: t, discountPct }: { tableId: string; totals: BillTotals; discountPct: number }) {
   const dispatch = useAppDispatch();
@@ -44,7 +45,7 @@ export function CartSummary({ tableId, totals: t, discountPct }: { tableId: stri
       <button
         onClick={() => {
           dispatch(requestBill(tableId));
-          router.push(`/table/${tableId}/bill`);
+          router.push(routes.bill(tableId));
         }}
         className="btn btn-primary mt-2 h-12 w-full text-base"
       >

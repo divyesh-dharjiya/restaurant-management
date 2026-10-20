@@ -6,12 +6,14 @@ import { computeBill } from "@/lib/billing";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectSession } from "@/store/selectors";
 import { clearCart } from "@/store/slices/posSlice";
+import { useConfirm } from "@/components/ui";
 import { CartLineItem } from "./CartLineItem";
 import { CartSummary } from "./CartSummary";
 
 export function CartPanel({ tableId, onClose }: { tableId: string; onClose?: () => void }) {
   const session = useAppSelector(selectSession(tableId));
   const dispatch = useAppDispatch();
+  const confirm = useConfirm();
   const cart = session?.cart ?? [];
   const totals = computeBill(cart, session?.discountPct ?? 0);
 
@@ -25,7 +27,7 @@ export function CartPanel({ tableId, onClose }: { tableId: string; onClose?: () 
         <div className="flex items-center gap-1">
           {cart.length > 0 && (
             <button
-              onClick={() => confirm("Remove all items from this order?") && dispatch(clearCart(tableId))}
+              onClick={async () => (await confirm({ title: "Clear this order?", body: "All items will be removed from the order.", confirmLabel: "Clear order", danger: true })) && dispatch(clearCart(tableId))}
               className="grid size-9 place-items-center rounded-lg text-subtle hover:bg-rose-500/10 hover:text-rose-600"
               aria-label="Clear order"
             >
