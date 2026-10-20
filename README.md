@@ -33,8 +33,8 @@ Old URLs (`/bills`, `/dashboard`, `/table/...`) redirect permanently to their `/
 ```
 src/
   app/            Routes only: thin pages, metadata, sitemap, robots, OG image
-    (staff)/      Staff app: Redux store, staff navbar, storage banner
-    (public)/     Customer pages (/menu): no store, no staff links, minimal JS
+    pos/          Staff app: PIN gate, Redux store, staff navbar, storage banner
+    (public)/     Customer pages (/, /menu): no store, minimal JS
   config/         Site name, URL, nav links, private paths
   features/       One folder per feature; owns its components
     floor/        Floor view, table card + animated illustration, booking/seat/table forms
@@ -42,6 +42,10 @@ src/
     bills/        Bill history, invoice, date-range filters
     dashboard/    KPIs, charts (charts/), year-over-year, recent bills
     menu/         Public menu + structured data
+    home/         Public home page sections and FAQ content
+    auth/         Staff PIN lock (hashing, idle lock, attempt limits)
+    kitchen/      Kitchen display, ticket cards, printable KOT slip
+    menu-manager/ Sold-out toggles for the till
   components/
     ui/           Reusable primitives (Modal, Stepper, StatCard, Segmented, …)
     layout/       Navbar, Logo
