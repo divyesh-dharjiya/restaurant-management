@@ -10,3 +10,11 @@ next-env.d.ts
 !.env.example
 .claude/
 .DS_Store
+
+# local tooling (kept on disk, not in git)
+.claude/
+.vscode/
+.github/
+AGENTS.md
+CLAUDE.md
+*.tsbuildinfo
