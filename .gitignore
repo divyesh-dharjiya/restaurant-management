@@ -7,8 +7,6 @@ next-env.d.ts
 
 # env & local tooling
 .env*
+!.env.example
 .claude/
 .DS_Store
-
-# original Vite stub kept locally for reference
-_legacy-vite/

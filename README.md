@@ -10,7 +10,7 @@ npm run typecheck
 npm test           # unit tests (Vitest): GST billing, dashboard periods, reservations, store, backups
 ```
 
-Set `NEXT_PUBLIC_SITE_URL` to your domain in production. The sitemap, canonical URLs and structured data use it.
+For production, copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SITE_URL` to your domain. The sitemap, canonical URLs and structured data use it.
 
 ## Pages
 
