@@ -1,5 +1,7 @@
 # EatingHUB
 
+**Live demo:** https://restaurant-management-rho-livid.vercel.app
+
 A restaurant website and POS for a pure-veg kitchen. The public site (home and menu) is server-rendered for search engines. The staff POS, behind a PIN, handles table-wise ordering, kitchen tickets, reservations, GST billing and a sales dashboard. All data lives in the browser (localStorage), so no backend is needed.
 
 ```bash
